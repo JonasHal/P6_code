@@ -9,27 +9,3 @@ Det eksisterende energiforbrug er bundet til produktion osv.
 
 Problem: Vi har ikke nok elbiler endnu
 
-Data:
-	Electricity Balance Non-Validated: (electricitybalancenonv_2_1_2022)
-	https://www.energidataservice.dk/tso-electricity/electricitybalancenonv
-
-	Consumption per DK36/DK19 Industry Code per hour: (consumptiondk3619codehour_2_1_2022)
-	https://www.energidataservice.dk/tso-electricity/consumptiondk3619codehour
-
-	Consumption coverage per municipality short term: (conscoverageprcountyshort)
-	https://www.energidataservice.dk/tso-electricity/conscoverageprcountyshort
-
-	Energy surplus per TSO-station long term: (energysurplusprstationshort)
-	https://www.energidataservice.dk/tso-electricity/energysurplusprstationlong
-
-	Fixed Residual Consumption: (fixedresidualconsumption)
-	https://www.energidataservice.dk/tso-electricity/fixedresidualconsumption
-	
-	Private consumption per housing and heating categories and industry consumption by municipality and hour: (privindustryconsumptionhour)
-	https://www.energidataservice.dk/tso-electricity/privindustryconsumptionhour
-
-	Transmission Lines: (transmissionlines)
-	https://www.energidataservice.dk/tso-electricity/transmissionlines¨
-
-	EV_Dataset_Denmark: 
-	https://data.mendeley.com/datasets/shtwh4k483/1
