@@ -9,12 +9,3 @@ Det eksisterende energiforbrug er bundet til produktion osv.
 
 Problem: Vi har ikke nok elbiler endnu
 
-Data:
-	Electricity Balance Non-Validated:
-	https://www.energidataservice.dk/tso-electricity/electricitybalancenonv
-
-	Electricity Production and Exchange 5 min Realtime:
-	https://www.energidataservice.dk/tso-electricity/electricityprodex5minrealtime
-
-	Consumption per DK36/DK19 Industry Code per hour:
-	https://www.energidataservice.dk/tso-electricity/consumptiondk3619codehour
