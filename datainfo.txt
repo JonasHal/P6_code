@@ -1,6 +1,12 @@
 Electricity Balance Non-Validated: (electricitybalancenonv_2_1_2022)
 https://www.energidataservice.dk/tso-electricity/electricitybalancenonv
 
+Capacity Per Municipality: (capacitypermunicipality)
+https://www.energidataservice.dk/tso-electricity/capacitypermunicipality
+
+Consumption per Municipality and DE35 industry codes: (consumptionpermunicipalityde35)
+https://www.energidataservice.dk/tso-electricity/consumptionpermunicipalityde35
+
 Consumption per DK36/DK19 Industry Code per hour: (consumptiondk3619codehour_2_1_2022)
 https://www.energidataservice.dk/tso-electricity/consumptiondk3619codehour
 
