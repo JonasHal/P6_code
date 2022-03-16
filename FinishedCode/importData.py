@@ -5,8 +5,10 @@ import json
 from datetime import timedelta
 
 class ImportEV:
-    def getCaltech(self, removeUsers = False, userSampleLimit = 50):
+    def getCaltech(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         data = pd.DataFrame(json.load(open(Path('../Data/acn_caltech.json'), 'r'))['_items'])
+        data["connectionTime"] = pd.to_datetime(data["connectionTime"]) - timedelta(hours=7)
+        data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
 
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
@@ -15,7 +17,6 @@ class ImportEV:
             if data["doneChargingTime"][i] is None:
                 data.loc[i, "doneChargingTime"] = data["disconnectTime"][i]
 
-        data["connectionTime"] = pd.to_datetime(data["connectionTime"]) - timedelta(hours=7)
         data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
         """
@@ -58,5 +59,5 @@ class ImportWeather:
 
 
 if __name__ == "__main__":
-    df = ImportEV().getCaltech(removeUsers=True, userSampleLimit=400)
-    print(df["userID"])
+    df = ImportEV().getCaltech(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=40)
+    print(df)
