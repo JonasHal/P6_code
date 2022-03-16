@@ -4,3 +4,5 @@ FinishedCode/__pycache__/preprocessingfunctions.cpython-39.pyc
 .idea/misc.xml
 .idea/misc.xml
 .idea/P6_code.iml
+*.xml
+*.iml
