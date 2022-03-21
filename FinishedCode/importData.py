@@ -8,6 +8,8 @@ class ImportEV:
     def getCaltech(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         data = pd.DataFrame(json.load(open(Path('../Data/acn_caltech.json'), 'r'))['_items'])
         data["connectionTime"] = pd.to_datetime(data["connectionTime"]) - timedelta(hours=7)
+        data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
+        data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
         data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
 
         if removeUsers:
