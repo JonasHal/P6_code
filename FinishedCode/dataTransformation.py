@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from P6_code.FinishedCode.importData import ImportEV
 
+pd.options.mode.chained_assignment = None
 # Preprocessing Functions
 class createUser:
     def __init__(self, dataframe, start, end):
@@ -35,11 +36,14 @@ class createUser:
         user_df.loc[:, ("Year")] = date_index.dt.strftime('%Y')
         user_df.loc[:, ("Month")] = date_index.dt.strftime('%m')
         user_df.loc[:, ("Day")] = date_index.dt.strftime('%d')
-        user_df.loc[:, ("Weekday")] = date_index.dt.strftime('%A')
+        user_df.loc[:, ("Weekday")] = date_index.dt.day_of_week
 
         #Impute 0 on missing values
         user_df["chargingTime"].fillna(pd.Timedelta('0 days'), inplace=True)
         user_df["kWhDelivered"].fillna(0, inplace=True)
+
+        #Timedelta to numeric on ConnectionTime
+        user_df['chargingTime'] = user_df['chargingTime'] / np.timedelta64(1, 's')
 
         return user_df.reset_index(drop=True)
 
