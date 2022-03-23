@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 from P6_code.FinishedCode.importData import ImportEV
-from P6_code.FinishedCode.dataTransformation import createUser
+from P6_code.FinishedCode.dataTransformation import createUsers
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -29,7 +29,7 @@ def split_sequences(input_sequences, output_sequence, n_steps_in, n_steps_out):
 if __name__ == "__main__":
     start, end = "2018-06-01", "2018-11-09"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=25)
-    Users = createUser(df, start, end)
+    Users = createUsers(df, start, end)
     User_61 = Users.getUserData(user="000000061")
 
     ss = StandardScaler()

@@ -4,7 +4,7 @@ from P6_code.FinishedCode.importData import ImportEV
 
 pd.options.mode.chained_assignment = None
 # Preprocessing Functions
-class createUser:
+class createUsers:
     def __init__(self, dataframe, start, end):
         self.data = dataframe
         self.start = start
@@ -50,6 +50,6 @@ class createUser:
 if __name__ == "__main__":
     start, end = "2018-05-01", "2018-11-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=30)
-    Users = createUser(df, start, end)
+    Users = createUsers(df, start, end)
     User_61 = Users.getUserData(user="000000061")
     print(User_61.to_string())
