@@ -96,7 +96,7 @@ def grid_search(X_trans, y_trans, cfg_list):
 	# evaluate configs
 	scores = [model_score(X_trans, y_trans, cfg) for cfg in cfg_list]
 	# sort configs by error, asc
-	scores.sort(key=lambda tup: tup[1])
+	scores.sort(key=lambda tup: tup[2])
 	return scores
 
 if __name__ == "__main__":
