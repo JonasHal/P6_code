@@ -103,19 +103,31 @@ if __name__ == "__main__":
 	start, end = "2018-09-01", "2018-11-09"
 	df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=25)
 	Users = createUsers(df, start, end)
-	User_61 = Users.getUserData(user="000000061")
-
-	ss = StandardScaler()
-	mm = MinMaxScaler(feature_range=(0, 1))
-
-	X, y = User_61.drop(columns=['kWhDelivered']), User_61.kWhDelivered
-
-	X_trans = ss.fit_transform(X)
-	y_trans = mm.fit_transform(y.values.reshape(-1, 1))
+	print(Users.data.userID.unique())
+	userID = ['000000061', '000000022', '000000324', '000000066']
 
 	cfg_list = model_configs()
-	scores = grid_search(X_trans, y_trans, cfg_list)
+	results = pd.DataFrame(columns=["userID", "n_steps_in", "n_steps_out", "n_nodes", "n_epochs", "n_batch", "errorTrain", "errorTest"])
+	print(results)
+	index = 0
 
-	# list top 3 configs
-	for cfg, errorTrain, errorTest in scores[:3]:
-		print(cfg, errorTrain, errorTest)
+	for i in userID:
+		User_61 = Users.getUserData(user=i)
+
+		ss = StandardScaler()
+		mm = MinMaxScaler(feature_range=(0, 1))
+
+		X, y = User_61.drop(columns=['kWhDelivered']), User_61.kWhDelivered
+
+		X_trans = ss.fit_transform(X)
+		y_trans = mm.fit_transform(y.values.reshape(-1, 1))
+
+		scores = grid_search(X_trans, y_trans, cfg_list)
+
+		# list top 3 configs
+		for cfg, errorTrain, errorTest in scores[:3]:
+			print(cfg, errorTrain, errorTest)
+			results.loc[index] = [i, cfg[0], cfg[1], cfg[2], cfg[3], cfg[4], round(errorTrain, 2), round(errorTest, 2)]
+			index += 1
+
+	print(results.to_string())
