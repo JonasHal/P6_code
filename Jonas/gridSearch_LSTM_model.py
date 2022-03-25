@@ -13,11 +13,11 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 # create a list of configs to try
 def model_configs():
 	# define scope of configs
-	n_steps_in = [8, 10]
+	n_steps_in = [5, 8, 10]
 	n_steps_out = [5]
-	n_nodes = [4, 8]
-	n_epochs = [50]
-	n_batch = [1, 150]
+	n_nodes = [4, 8, 16]
+	n_epochs = [30]
+	n_batch = [1, 20, 150]
 
 	# create configs
 	configs = list()
@@ -103,8 +103,7 @@ if __name__ == "__main__":
 	start, end = "2018-09-01", "2018-11-09"
 	df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=25)
 	Users = createUsers(df, start, end)
-	print(Users.data.userID.unique())
-	userID = ['000000061', '000000022', '000000324', '000000066']
+	userID = Users.data.userID.unique()
 
 	cfg_list = model_configs()
 	results = pd.DataFrame(columns=["userID", "n_steps_in", "n_steps_out", "n_nodes", "n_epochs", "n_batch", "errorTrain", "errorTest"])
