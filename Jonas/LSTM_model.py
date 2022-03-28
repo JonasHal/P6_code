@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     X_trans = ss.fit_transform(X)
     y_trans = mm.fit_transform(y.values.reshape(-1, 1))
-    look_back = 5
+    look_back = 6
 
     X_ss, y_mm = split_sequences(X_trans, y_trans, 10, look_back)
 
