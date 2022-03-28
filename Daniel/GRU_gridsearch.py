@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 from P6_code.FinishedCode.importData import ImportEV
 from P6_code.FinishedCode.dataTransformation import createUsers
@@ -10,14 +9,15 @@ from keras.layers import Dense, GRU
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
+
 # create a list of configs to try
 def model_configs():
 	# define scope of configs
-	n_steps_in = [8, 10]
+	n_steps_in = [5, 8, 10]
 	n_steps_out = [5]
-	n_nodes = [4, 8]
-	n_epochs = [50]
-	n_batch = [1, 150]
+	n_nodes = [4, 8, 16]
+	n_epochs = [30]
+	n_batch = [1, 20, 150]
 
 	# create configs
 	configs = list()
@@ -34,8 +34,9 @@ def model_configs():
 
 	return configs
 
+
 def split_sequences(input_sequences, output_sequence, n_steps_in, n_steps_out):
-	X, y = list(), list() # instantiate X and y
+	X, y = list(), list()  # instantiate X and y
 
 	for i in range(len(input_sequences)):
 		# find the end of the input, output sequence
@@ -49,6 +50,7 @@ def split_sequences(input_sequences, output_sequence, n_steps_in, n_steps_out):
 		seq_x, seq_y = input_sequences[i:end_ix], output_sequence[end_ix-1:out_end_ix, -1]
 		X.append(seq_x), y.append(seq_y)
 	return np.array(X), np.array(y)
+
 
 # fit a model
 def model_score(X_trans, y_trans, config):
@@ -85,11 +87,12 @@ def model_score(X_trans, y_trans, config):
 
 	# calculate root mean squared error
 	trainScore = math.sqrt(mean_squared_error(trainY[:, 0], trainPredict[:, 0]))
-	print('Train Score: %.2f RMSE' % (trainScore))
+	print('Train Score: %.2f RMSE' % trainScore)
 	testScore = math.sqrt(mean_squared_error(testY[:, 0], testPredict[:, 0]))
-	print('Test Score: %.2f RMSE' % (testScore))
+	print('Test Score: %.2f RMSE' % testScore)
 
 	return config, trainScore, testScore
+
 
 # grid search configs
 def grid_search(X_trans, y_trans, cfg_list):
@@ -99,12 +102,12 @@ def grid_search(X_trans, y_trans, cfg_list):
 	scores.sort(key=lambda tup: tup[2])
 	return scores
 
+
 if __name__ == "__main__":
 	start, end = "2018-09-01", "2018-11-09"
 	df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=25)
 	Users = createUsers(df, start, end)
-	print(Users.data.userID.unique())
-	userID = ['000000061', '000000022', '000000324', '000000066']
+	userID = Users.data.userID.unique()
 
 	cfg_list = model_configs()
 	results = pd.DataFrame(columns=["userID", "n_steps_in", "n_steps_out", "n_nodes", "n_epochs", "n_batch", "errorTrain", "errorTest"])
