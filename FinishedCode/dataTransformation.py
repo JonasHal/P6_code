@@ -20,23 +20,24 @@ class createUsers:
         # Feature Information on charging days
         date_index_charging = pd.to_datetime(user_df.pop("connectionTime"))
 
-        user_df.loc[:, ("connectionDay")] = pd.to_datetime(date_index_charging.dt.strftime('%Y-%m-%d'))
+        user_df.loc[:, ("connectionHour")] = pd.to_datetime(date_index_charging.dt.strftime('%Y-%m-%d %H'))
 
         # Index creation
         periods = pd.to_datetime(self.end) - pd.to_datetime(self.start)
-        index_values = (pd.date_range(self.start, periods=periods.days, freq='D'))
+        index_values = pd.period_range(self.start, periods=periods.days*24, freq='H').to_timestamp()
 
         # Merge the days
-        user_df = pd.merge(user_df, pd.DataFrame(data=pd.to_datetime(index_values), columns=["connectionDay"]), how="outer", on="connectionDay")
-        user_df = user_df.sort_values(by="connectionDay")
+        user_df = pd.merge(user_df, pd.DataFrame(data=pd.to_datetime(index_values), columns=["connectionHour"]), how="outer", on="connectionHour")
+        user_df = user_df.sort_values(by="connectionHour")
 
         #Additional Feature Informations
-        date_index = pd.to_datetime(user_df.pop("connectionDay"))
+        date_index = pd.to_datetime(user_df.pop("connectionHour"))
 
         user_df.loc[:, ("Year")] = date_index.dt.strftime('%Y')
         user_df.loc[:, ("Month")] = date_index.dt.strftime('%m')
         user_df.loc[:, ("Day")] = date_index.dt.strftime('%d')
         user_df.loc[:, ("Weekday")] = date_index.dt.day_of_week
+        user_df.loc[:, ("Hour")] = date_index.dt.strftime('%H')
 
         #Impute 0 on missing values
         user_df["chargingTime"].fillna(pd.Timedelta('0 days'), inplace=True)
