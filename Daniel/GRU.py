@@ -7,7 +7,7 @@ from P6_code.FinishedCode.dataTransformation import createUsers
 
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.layers import LSTM
+from keras.layers import GRU
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     trainY, testY = y_mm[:-train_test_cutoff], y_mm[-train_test_cutoff:]
 
     model = Sequential()
-    model.add(LSTM(4, input_shape=(10, look_back)))
+    model.add(GRU(4, input_shape=(10, look_back)))
     model.add(Dense(1))
     model.compile(loss='mean_squared_error', optimizer='adam')
     model.fit(trainX, trainY, epochs=100, batch_size=1, verbose=2)
