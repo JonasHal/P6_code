@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 from P6_code.FinishedCode.importData import ImportEV
-from P6_code.FinishedCode.dataTransformation import createUsers
+from P6_code.OldCode.dataTransformation import createUsers
 
 from keras.models import Sequential
 from keras.layers import Dense, LSTM
@@ -66,7 +66,8 @@ def model_score(X_trans, y_trans, config):
 	print(X_ss.shape)
 	# define model
 	model = Sequential()
-	model.add(LSTM(n_nodes, input_shape=(n_steps_in, n_steps_out)))
+	model.add(LSTM(n_nodes, input_shape=(n_steps_in, n_steps_out), return_sequences=True))
+	model.add(LSTM(n_nodes, input_shape=(n_steps_in, n_steps_out), return_sequences=False))
 	model.add(Dense(1))
 	model.compile(loss='mse', optimizer='adam')
 
@@ -107,7 +108,6 @@ if __name__ == "__main__":
 
 	cfg_list = model_configs()
 	results = pd.DataFrame(columns=["userID", "n_steps_in", "n_steps_out", "n_nodes", "n_epochs", "n_batch", "errorTrain", "errorTest"])
-	print(results)
 	index = 0
 
 	for i in userID:
