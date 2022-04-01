@@ -4,6 +4,7 @@ import numpy as np
 import json
 from datetime import timedelta
 
+
 class ImportEV:
     def getCaltech(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         data = pd.DataFrame(json.load(open(Path('../Data/acn_caltech.json'), 'r'))['_items'])
@@ -30,36 +31,101 @@ class ImportEV:
         """
         return data
 
-    def getJPL(self):
+    def getJPL(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
+        data = pd.DataFrame(json.load(open(Path('../Data/acn_jpl.json'), 'r'))['_items'])
+        data["connectionTime"] = pd.to_datetime(data["connectionTime"]) - timedelta(hours=7)
+        data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
+        data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
+        data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
+
+        if removeUsers:
+            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
+        """
+        for i in range(len(data["doneChargingTime"])):
+            if data["doneChargingTime"][i] is None:
+                data.loc[i, "doneChargingTime"] = data["disconnectTime"][i]
+
+        data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
+        data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
+        """
+
         """
         Import JPL
         :return:
         :rtype:
         """
+        return data
 
-    def getOffice(self):
+    def getOffice(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
+        data = pd.DataFrame(json.load(open(Path('../Data/acn_office1.json'), 'r'))['_items'])
+        data["connectionTime"] = pd.to_datetime(data["connectionTime"]) - timedelta(hours=7)
+        data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
+        data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
+        data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
+
+        if removeUsers:
+            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
+        """
+        for i in range(len(data["doneChargingTime"])):
+            if data["doneChargingTime"][i] is None:
+                data.loc[i, "doneChargingTime"] = data["disconnectTime"][i]
+
+        data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
+        data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
+        """
+
         """
         Import Office
         :return:
         :rtype:
         """
+        return data
+
 
 class ImportWeather:
-    def getPasadena(self):
+    def getPasadena(self, agg='hour'):
         """
         Import Pasadena Weather Data
         :return:
         :rtype:
         """
+        weather_pasadena = pd.read_csv(Path('../Data/weather_Pasadena_hourly.csv'))
+        weather_pasadena.drop([col for col in weather_pasadena.columns if 'qc' in col], axis='columns', inplace=True)
+        weather_pasadena.drop(['Stn Id', 'Stn Name', 'CIMIS Region'], axis='columns', inplace=True)
+        weather_pasadena['Date'] = pd.to_datetime(weather_pasadena['Date'])
 
-    def getSiliconValley(self):
+        if agg == 'day':
+            agg_dict = {col: 'mean' for col in weather_pasadena.columns.drop('Date')}
+            agg_dict['Precip (mm)'] = 'sum'
+    
+            weather_pasadena = weather_pasadena.groupby('Date').agg(agg_dict)
+            weather_pasadena.drop('Hour (PST)', axis='columns', inplace=True)
+
+        return weather_pasadena
+
+    def getSiliconValley(self, agg='hour'):
         """
         Import Silicon Valley Weather Data
         :return:
         :rtype:
         """
+        weather_silicon = pd.read_csv(Path('../Data/weather_Pasadena_hourly.csv'))
+        weather_silicon.drop([col for col in weather_silicon.columns if 'qc' in col], axis='columns', inplace=True)
+        weather_silicon.drop(['Stn Id', 'Stn Name', 'CIMIS Region'], axis='columns', inplace=True)
+        weather_silicon['Date'] = pd.to_datetime(weather_silicon['Date'])
+
+        if agg == 'day':
+            agg_dict = {col: 'mean' for col in weather_silicon.columns.drop('Date')}
+            agg_dict['Precip (mm)'] = 'sum'
+
+            weather_silicon = weather_silicon.groupby('Date').agg(agg_dict)
+            weather_silicon.drop('Hour (PST)', axis='columns', inplace=True)
+
+        return weather_silicon
 
 
 if __name__ == "__main__":
-    df = ImportEV().getCaltech(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=40)
-    print(df)
+    #df = ImportEV().getCaltech(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=40)
+    #df = ImportEV().getJPL(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=10)
+    df = ImportEV().getOffice(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=1)
+    print(df.head().to_string())

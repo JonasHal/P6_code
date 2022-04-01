@@ -4,27 +4,13 @@ import matplotlib.pyplot as plt
 import math
 from P6_code.FinishedCode.importData import ImportEV
 from P6_code.FinishedCode.dataTransformation import createUsers
+from P6_code.FinishedCode.functions import split_sequences
 
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
-
-def split_sequences(input_sequences, output_sequence, n_steps_in, n_steps_out):
-    X, y = list(), list() # instantiate X and y
-    for i in range(len(input_sequences)):
-        # find the end of the input, output sequence
-        end_ix = i + n_steps_in
-        out_end_ix = end_ix + n_steps_out - 1
-        # check if we are beyond the dataset
-        if out_end_ix > len(input_sequences):
-            break
-
-        # gather input and output of the pattern
-        seq_x, seq_y = input_sequences[i:end_ix], output_sequence[end_ix-1:out_end_ix, -1]
-        X.append(seq_x), y.append(seq_y)
-    return np.array(X), np.array(y)
 
 if __name__ == "__main__":
     start, end = "2018-06-01", "2018-11-09"
@@ -68,9 +54,9 @@ if __name__ == "__main__":
 
     # calculate root mean squared error
     trainScore = math.sqrt(mean_squared_error(trainY[:, 0], trainPredict[:, 0]))
-    print('Train Score: %.2f RMSE' % (trainScore))
+    print('Train Score: %.2f RMSE' % trainScore)
     testScore = math.sqrt(mean_squared_error(testY[:, 0], testPredict[:, 0]))
-    print('Test Score: %.2f RMSE' % (testScore))
+    print('Test Score: %.2f RMSE' % testScore)
 
     # shift train predictions for plotting
     trainPredictPlot = np.zeros_like(y_trans)
