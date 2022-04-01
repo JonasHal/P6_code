@@ -66,7 +66,7 @@ if __name__ == "__main__":
     # shift test predictions for plotting
     testPredictPlot = np.zeros_like(y_trans)
     testPredictPlot[:] = np.nan
-    testPredictPlot[len(trainPredict) + (look_back*2)+1:len(y_trans)-2] = testPredict
+    testPredictPlot[len(trainPredict) + (look_back*2)+1:len(y_trans)-1] = testPredict
 
     # plot baseline and predictions
     plt.plot(mm.inverse_transform(y_trans))
