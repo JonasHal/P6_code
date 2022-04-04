@@ -1,9 +1,8 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import math
 from P6_code.FinishedCode.importData import ImportEV
-from P6_code.OldCode.dataTransformation import createUsers
+from P6_code.FinishedCode.dataTransformation import createUsers
 
 from keras.models import Sequential
 from keras.layers import Dense, LSTM

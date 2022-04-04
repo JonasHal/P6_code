@@ -1,12 +1,10 @@
-import pandas as pd
-import numpy as np
 import math
 from P6_code.FinishedCode.importData import ImportEV
 from P6_code.FinishedCode.dataTransformation import createUsers
 from P6_code.FinishedCode.functions import split_sequences
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, GRU
-from sklearn.metrics import mean_squared_error, mean_absolute_percentage_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 #Ikke sikkert den skal bruges
