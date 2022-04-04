@@ -1,4 +1,5 @@
 import math
+import numpy as np
 from P6_code.FinishedCode.importData import ImportEV
 from P6_code.FinishedCode.dataTransformation import createUsers
 from P6_code.FinishedCode.functions import split_sequences
@@ -112,14 +113,15 @@ class Model:
 
 		#Make and Invert predictions
 		train_predict, val_predict = [], []
-		self.trainScore, self.testScore = [], []
+		self.trainScore, self.valScore = [], []
+
 		for i in range(len(X_train)):
 			train_predict.append(self.mm.inverse_transform(self.model.predict(X_train[i]).reshape(-1, 1)))
 			val_predict.append(self.mm.inverse_transform(self.model.predict(X_val[i]).reshape(-1, 1)))
 
 			# calculate root mean squared error
 			self.trainScore.append(math.sqrt(mean_squared_error(Y_train[i][:, 0], train_predict[i][:, 0])))
-			self.testScore.append(math.sqrt(mean_squared_error(Y_val[i][:, 0], val_predict[i][:, 0])))
+			self.valScore.append(math.sqrt(mean_squared_error(Y_val[i][:, 0], val_predict[i][:, 0])))
 
 		#Return the model and the scalers
 		return self
@@ -131,24 +133,52 @@ class Model:
 
 		#Save the user_ids for return
 		user_id = users.data.userID.unique()
-
 		user_df_test = []
 
 		for user in user_id:
 			user_df_test.append(users.getUserData(user=user))
 
+		# Create Input and Target Features
 		X_test, Y_test = [], []
 
 		for user in user_df_test:
-			Y_test.append(user.chargingTime)
-			X_test.append(user.drop(columns=['chargingTime']))
+			Y_test.append(user[self.target_feature])
+			X_test.append(user.drop(columns=[self.target_feature]))
 
-		return X_test, Y_test
+		# Scale the Data
+		X_test_scaled = []
+
+		for user in X_test:
+			X_test_scaled.append(self.ss.transform(user))
+
+		#Split the data for prediction in the RNN models
+		users_test_X, users_test_Y = [], []
+
+		for user in range(len(X_test_scaled)):
+			user_test_X, user_test_Y = split_sequences(X_test_scaled[user], np.array(Y_test[user]).reshape(-1, 1), 10, 6)
+			users_test_X.append(user_test_X)
+			users_test_Y.append(user_test_Y)
+
+		#Predict the data
+		test_predict = []
+		self.testScore = []
+
+		# Make and Invert predictions
+		for i in range(len(users_test_X)):
+			test_predict.append(self.mm.inverse_transform(self.model.predict(users_test_X[i]).reshape(-1, 1)))
+
+			# calculate root mean squared error
+			self.testScore.append(math.sqrt(mean_squared_error(users_test_Y[i][:, 0], test_predict[i][:, 0])))
+
+		return self
 
 if __name__ == "__main__":
 	#The model will always be first input
 	model = Model().create_model()
+	model = model.PredictTestSample("2018-11-09", "2019-01-01", 15)
+	print(model.valScore)
 	print(model.testScore)
+
 
 	""" Ikke sikkert det skal bruges
 	cfg_list = model_configs()
