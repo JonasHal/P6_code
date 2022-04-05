@@ -8,9 +8,14 @@ from P6_code.FinishedCode.functions import split_sequences
 
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.layers import LSTM
+from keras.layers import Flatten
+from keras.layers.convolutional import Conv1D
+from keras.layers.convolutional import MaxPooling1D
+
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+
 
 if __name__ == "__main__":
     start, end = "2018-06-01", "2018-11-09"
@@ -37,10 +42,15 @@ if __name__ == "__main__":
     trainY, testY = y_mm[:-train_test_cutoff], y_mm[-train_test_cutoff:]
 
     model = Sequential()
-    model.add(LSTM(4, input_shape=(10, look_back)))
+    model.add(Conv1D(filters=64, kernel_size=2, input_shape=(10, look_back)))
+    model.add(MaxPooling1D(pool_size=2))
+    model.add(Flatten())
+    model.add(Dense(100, activation='relu'))
     model.add(Dense(1))
-    model.compile(loss='mean_squared_error', optimizer='adam')
-    model.fit(trainX, trainY, epochs=100, batch_size=1, verbose=2)
+    model.compile(optimizer='adam', loss='mse')
+
+    #fit model
+    model.fit(trainX, trainY, epochs=10000, verbose=1)
 
     # make predictions
     trainPredict = model.predict(trainX)
@@ -58,18 +68,10 @@ if __name__ == "__main__":
     testScore = math.sqrt(mean_squared_error(testY[:, 0], testPredict[:, 0]))
     print('Test Score: %.2f RMSE' % testScore)
 
-    # shift train predictions for plotting
-    trainPredictPlot = np.zeros_like(y_trans)
-    trainPredictPlot[:] = np.nan
-    trainPredictPlot[look_back:len(trainPredict) + look_back] = trainPredict
 
-    # shift test predictions for plotting
-    testPredictPlot = np.zeros_like(y_trans)
-    testPredictPlot[:] = np.nan
-    testPredictPlot[len(trainPredict) + (look_back*2)+1:len(y_trans)-1] = testPredict
 
-    # plot baseline and predictions
-    plt.plot(mm.inverse_transform(y_trans))
-    plt.plot(trainPredictPlot)
-    plt.plot(testPredictPlot)
-    plt.show()
+    print('done')
+
+
+
+
