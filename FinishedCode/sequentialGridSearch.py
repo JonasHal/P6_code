@@ -176,6 +176,7 @@ if __name__ == "__main__":
 	#The model will always be first input
 	model = Model().create_model()
 	model = model.PredictTestSample("2018-11-09", "2019-01-01", 15)
+	print(model.trainScore)
 	print(model.valScore)
 	print(model.testScore)
 

@@ -22,6 +22,8 @@ class createUsers:
         date_index_charging = pd.to_datetime(user_df.pop("connectionTime"))
 
         user_df.loc[:, ("connectionDay")] = pd.to_datetime(date_index_charging.dt.strftime('%Y-%m-%d'))
+        user_df = user_df.groupby('connectionDay').agg({'chargingTime': np.sum, 'kWhDelivered': np.sum})
+
         # Index creation
         periods = pd.to_datetime(self.end) - pd.to_datetime(self.start)
         index_values = (pd.date_range(self.start, periods=periods.days, freq='D'))
@@ -50,5 +52,5 @@ if __name__ == "__main__":
     start, end = "2018-05-01", "2018-11-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=30)
     Users = createUsers(df, start, end)
-    User_61 = Users.getUserData(user="000000061")
+    User_61 = Users.getUserData(user="000000022")
     print(User_61.to_string())
