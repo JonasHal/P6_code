@@ -34,9 +34,9 @@ class createUsers:
         # Additional Feature Informations
         date_index = pd.to_datetime(user_df.pop("connectionDay"))
 
-        user_df.loc[:, ("Year")] = date_index.dt.strftime('%Y')
-        user_df.loc[:, ("Month")] = date_index.dt.strftime('%m')
-        user_df.loc[:, ("Day")] = date_index.dt.strftime('%d')
+        user_df.loc[:, ("Year")] = date_index.dt.year
+        user_df.loc[:, ("Month")] = date_index.dt.month
+        user_df.loc[:, ("Day")] = date_index.dt.day
         user_df.loc[:, ("Weekday")] = date_index.dt.day_of_week
 
         #Impute 0 on missing values
