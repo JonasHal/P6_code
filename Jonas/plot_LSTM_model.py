@@ -13,20 +13,19 @@ from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 if __name__ == "__main__":
-    start, end = "2018-06-01", "2019-03-01"
+    start, end = "2018-06-01", "2018-12-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=25)
     Users = createUsers(df, start, end)
-    User_61 = Users.getUserData(user="000000061")
+    User_61 = Users.getUserData(user="000000022")
 
     ss = StandardScaler()
     mm = MinMaxScaler(feature_range=(0, 1))
 
-    X, y = User_61.drop(columns="kWhDelivered"), User_61["chargingTime"]
-
+    X, y = User_61.drop(columns="chargingTime"), User_61["kWhDelivered"]
     X_trans = ss.fit_transform(X)
     y_trans = mm.fit_transform(y.values.reshape(-1, 1))
 
-    n_steps_in, n_steps_out = 10, 5
+    n_steps_in, n_steps_out = 10, 1
 
     X_ss, y_mm = split_sequences(X_trans, y_trans, n_steps_in, n_steps_out)
 
@@ -35,9 +34,8 @@ if __name__ == "__main__":
     total_samples = len(X)
     train_test_cutoff = round(0.20 * total_samples)
 
-    trainX, testX = X_ss[:-train_test_cutoff], X_ss[-train_test_cutoff:]
-
-    trainY, testY = y_mm[:-train_test_cutoff], y_mm[-train_test_cutoff:]
+    trainX, testX = X_ss[:-train_test_cutoff], X_ss[-train_test_cutoff:-1]
+    trainY, testY = y_mm[1:-train_test_cutoff + 1], y_mm[-train_test_cutoff + 1:]
 
     model = Sequential()
     model.add(LSTM(100, return_sequences=True, input_shape=(n_steps_in, n_features)))
@@ -63,14 +61,14 @@ if __name__ == "__main__":
     print('Test Score: %.2f RMSE' % testScore)
 
     # shift train predictions for plotting
-    trainPredictPlot = np.zeros_like(y_trans)
+    trainPredictPlot = np.zeros_like(y_trans + np.array([[np.nan]]*n_steps_out))
     trainPredictPlot[:] = np.nan
-    trainPredictPlot[n_steps_out:len(trainPredict) + n_steps_out] = trainPredict[:, -1].reshape(-1, 1)
+    trainPredictPlot[n_steps_in:len(trainPredict) + n_steps_in] = trainPredict[:, 0].reshape(-1, 1)
 
     # shift test predictions for plotting
-    testPredictPlot = np.zeros_like(y_trans)
+    testPredictPlot = np.zeros_like(y_trans + np.array([[np.nan]]*n_steps_out))
     testPredictPlot[:] = np.nan
-    testPredictPlot[len(trainPredict) + n_steps_out*2 + 2:len(y_trans)-1] = testPredict[:, -1].reshape(-1, 1)
+    testPredictPlot[len(trainPredict) + (n_steps_in) : len(y_trans) + n_steps_out] = testPredict[:, 0].reshape(-1, 1)
 
     # plot baseline and predictions
     plt.plot(mm.inverse_transform(y_trans))
