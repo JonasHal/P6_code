@@ -66,9 +66,9 @@ if __name__ == "__main__":
     trainPredictPlot[n_steps_in:len(trainPredict) + n_steps_in] = trainPredict[:, 0].reshape(-1, 1)
 
     # shift test predictions for plotting
-    testPredictPlot = np.zeros_like(y_trans + np.array([[np.nan]]*n_steps_out))
+    testPredictPlot = np.zeros_like(np.concatenate((y_trans, np.array([[np.nan]]*n_steps_in)), axis=0))
     testPredictPlot[:] = np.nan
-    testPredictPlot[len(trainPredict) + (n_steps_in) : len(y_trans) + n_steps_out] = testPredict[:, 0].reshape(-1, 1)
+    testPredictPlot[len(trainPredict) + (n_steps_in + n_steps_out) : len(y_trans) + n_steps_out] = testPredict[:, 0].reshape(-1, 1)
 
     # plot baseline and predictions
     plt.plot(mm.inverse_transform(y_trans))

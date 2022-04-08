@@ -7,6 +7,7 @@ from keras.models import Sequential
 from keras.layers import Dense, LSTM, GRU
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+import matplotlib.pyplot as plt
 
 #Ikke sikkert den skal bruges
 def model_configs():
@@ -36,6 +37,7 @@ class Model:
 		self.userSampleLimit = 25
 		self.val_split = 0.2
 		self.target_feature = 'chargingTime'
+		self.drop_feature = "kWhDelivered"
 
 		#Scalers
 		self.ss = StandardScaler()
@@ -44,10 +46,9 @@ class Model:
 		#Model Hyperparameters (configs)
 		self.model = Sequential()
 		self.n_steps_in = 10
+		self.n_steps_out = 1
 		self.n_nodes = 4
-		self.n_batch = 20
 		self.epochs = 20
-
 
 	def create_model(self, type="LSTM"):
 		df_train = ImportEV().getCaltech(start_date=self.train_start, end_date=self.train_end, removeUsers=True, userSampleLimit=self.userSampleLimit)
@@ -63,9 +64,9 @@ class Model:
 
 		for user in users_df:
 			Y.append(user[self.target_feature])
-			X.append(user.drop(columns=[self.target_feature]))
+			X.append(user.drop(columns=[self.drop_feature]))
 
-		lenInputFeature = len(X[0].columns)
+		self.n_features = len(X[0].columns)
 
 		#Scale the Data
 		X_scaled = []
@@ -82,34 +83,34 @@ class Model:
 
 		#Split the data into training and validation data
 		total_samples = len(X[0])
-		train_test_cutoff = round(self.val_split * total_samples)
+		train_val_cutoff = round(self.val_split * total_samples)
 
 		X_train, X_val = [], []
 		Y_train, Y_val = [], []
 
 		for user in range(len(Y_scaled)):
-			user_X, user_Y = split_sequences(X_scaled[user], Y_scaled[user], 10, lenInputFeature)
+			user_X, user_Y = split_sequences(X_scaled[user], Y_scaled[user], self.n_steps_in, self.n_steps_out)
 
-			X_train.append(user_X[:-train_test_cutoff])
-			X_val.append(user_X[-train_test_cutoff:])
+			X_train.append(user_X[:-train_val_cutoff])
+			X_val.append(user_X[-train_val_cutoff:-1])
 
-			Y_train.append(user_Y[:-train_test_cutoff])
-			Y_val.append(user_Y[-train_test_cutoff:])
+			Y_train.append(user_Y[1:-train_val_cutoff + 1])
+			Y_val.append(user_Y[-train_val_cutoff + 1:])
 
 		#Create the model
 		if type == "LSTM":
-			self.model.add(LSTM(self.n_nodes, input_shape=(self.n_steps_in, lenInputFeature)))  # todo: add inputs steps
+			self.model.add(LSTM(self.n_nodes, input_shape=(self.n_steps_in, self.n_features)))
 		elif type == "GRU":
-			self.model.add(GRU(self.n_nodes, input_shape=(self.n_steps_in, lenInputFeature)))  # todo: add inputs steps
+			self.model.add(GRU(self.n_nodes, input_shape=(self.n_steps_in, self.n_features)))
 		else:
 			raise Exception("The type of the model should either be LSTM or GRU")
 
-		self.model.add(Dense(1))
+		self.model.add(Dense(self.n_steps_out))
 		self.model.compile(optimizer='adam', loss='mse')
 
 		#Fit the data and trains the model
 		for i in range(len(X_train)):
-			self.model.fit(x=X_train[i], y=Y_train[i], epochs=self.epochs, batch_size=self.n_batch, verbose=2)
+			self.model.fit(x=X_train[i], y=Y_train[i], epochs=self.epochs, verbose=2)
 
 		#Make and Invert predictions
 		train_predict, val_predict = [], []
@@ -143,7 +144,7 @@ class Model:
 
 		for user in user_df_test:
 			Y_test.append(user[self.target_feature])
-			X_test.append(user.drop(columns=[self.target_feature]))
+			X_test.append(user.drop(columns=[self.drop_feature]))
 
 		# Scale the Data
 		X_test_scaled = []
@@ -152,34 +153,43 @@ class Model:
 			X_test_scaled.append(self.ss.transform(user))
 
 		#Split the data for prediction in the RNN models
-		users_test_X, users_test_Y = [], []
+		users_test_X, self.users_test_Y = [], []
 
 		for user in range(len(X_test_scaled)):
-			user_test_X, user_test_Y = split_sequences(X_test_scaled[user], np.array(Y_test[user]).reshape(-1, 1), 10, 6)
+			user_test_X, user_test_Y = split_sequences(X_test_scaled[user], np.array(Y_test[user]).reshape(-1, 1), self.n_steps_in, self.n_steps_out)
 			users_test_X.append(user_test_X)
-			users_test_Y.append(user_test_Y)
+			self.users_test_Y.append(user_test_Y)
 
 		#Predict the data
-		test_predict = []
+		self.test_predict = []
 		self.testScore = []
 
 		# Make and Invert predictions
-		for i in range(len(users_test_X)):
-			test_predict.append(self.mm.inverse_transform(self.model.predict(users_test_X[i]).reshape(-1, 1)))
+		for user in range(len(users_test_X)):
+			self.test_predict.append(self.mm.inverse_transform(self.model.predict(users_test_X[user]).reshape(-1, 1)))
 
 			# calculate root mean squared error
-			self.testScore.append(math.sqrt(mean_squared_error(users_test_Y[i][:, 0], test_predict[i][:, 0])))
+			self.testScore.append(math.sqrt(mean_squared_error(self.users_test_Y[user][:, 0], self.test_predict[user][:, 0])))
+
+		print(self.test_predict[0])
 
 		return self
+
+	def PlotTestSample(self, user=0):
+		# plot baseline and predictions
+		plt.plot(self.users_test_Y[user])
+		plt.plot(self.test_predict[user])
+		plt.show()
 
 if __name__ == "__main__":
 	#The model will always be first input
 	model = Model().create_model()
-	model = model.PredictTestSample("2018-11-09", "2019-01-01", 15)
+	model = model.PredictTestSample("2018-11-09", "2019-01-01", 20)
 	print(model.trainScore)
 	print(model.valScore)
 	print(model.testScore)
 
+	model.PlotTestSample(user=0)
 
 	""" Ikke sikkert det skal bruges
 	cfg_list = model_configs()
