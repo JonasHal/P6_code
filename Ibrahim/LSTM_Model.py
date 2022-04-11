@@ -27,12 +27,19 @@ if __name__ == "__main__":
 
 
 
+   
     df = User_61[['chargingTime','kWhDelivered']]
     #X, y = User_61.drop(columns=['kWhDelivered']), User_61.kWhDelivered
     #print(df.shape)
 
+    # LSTM uses sigmoid and tanh that are sensitive to magnitude so values need to be normalized
+    # normalize the dataset
     scaler = StandardScaler()
-    df_scaled = scaler.fit_transform(df)
+    scaler = scaler.fit(df)
+    df_scaled = scaler.transform(df)
+
+    #scaler = StandardScaler()
+    #df_scaled = scaler.fit_transform(df)
     #mm = MinMaxScaler(feature_range=(0, 1))
 
     trainX = []
@@ -44,12 +51,10 @@ if __name__ == "__main__":
     for i in  range(n_past, len(df_scaled) - n_feature +1):
         trainX.append(df_scaled[i - n_past:i, 0:df.shape[1]])
         trainY.append(df_scaled[i + n_feature - 1:i + n_feature, 0])
-    print(trainX)
-    print('w')
-    print(trainY)
-    trainX, trainY = np.array(trainX), np.array(trainY)
 
-    #print(trainX, trainY)
+    trainX, trainY = np.array(trainX), np.array(trainY)
+    print(trainX, trainY)
+
 
 
 """
@@ -61,7 +66,7 @@ if __name__ == "__main__":
     model.compile(optimizer='adam', loss='mse')
     model.summary()
 
-    #fit model
-    history = model.fit(trainX, trainY, epochs=100, batch_size=16, validation_split= 0.1, verbose=1)
+    # fit the model
+    history = model.fit(trainX, trainY, epochs=5, batch_size=16, validation_split=0.1, verbose=1)
 """
 
