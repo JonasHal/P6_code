@@ -48,6 +48,8 @@ class Model:
 		self.n_steps_in = 4
 		self.n_steps_out = 1
 		self.n_nodes = 10
+
+		self.batch_size = 10
 		self.epochs = 30
 
 	def create_model(self, type="LSTM"):
@@ -112,7 +114,7 @@ class Model:
 
 		#Fit the data and trains the model
 		for i in range(len(X_train)):
-			self.model.fit(x=X_train[i], y=Y_train[i], epochs=self.epochs, verbose=2)
+			self.model.fit(x=X_train[i], y=Y_train[i], batch_size=self.batch_size, epochs=self.epochs, verbose=2)
 
 		#Make and Invert predictions
 		train_predict, val_predict = [], []
