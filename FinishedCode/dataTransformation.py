@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas.tseries.holiday import USFederalHolidayCalendar as calendar
 import numpy as np
 from P6_code.FinishedCode.importData import ImportEV
 
@@ -34,9 +35,12 @@ class createUsers:
         # Additional Feature Informations
         date_index = pd.to_datetime(user_df.pop("connectionDay"))
 
-        user_df.loc[:, ("Year")] = date_index.dt.year
-        user_df.loc[:, ("Month")] = date_index.dt.month
-        user_df.loc[:, ("Day")] = date_index.dt.day
+        #Holiday Handling
+        cal = calendar()
+        holidays = cal.holidays(start=self.start, end=self.end)
+
+        #Input Features on specific days
+        user_df.loc[:, 'Holiday'] = date_index.isin(holidays)
         user_df.loc[:, ("Weekday")] = date_index.dt.day_of_week
 
         #Impute 0 on missing values

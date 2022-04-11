@@ -45,10 +45,10 @@ class Model:
 
 		#Model Hyperparameters (configs)
 		self.model = Sequential()
-		self.n_steps_in = 10
+		self.n_steps_in = 4
 		self.n_steps_out = 1
-		self.n_nodes = 4
-		self.epochs = 20
+		self.n_nodes = 10
+		self.epochs = 30
 
 	def create_model(self, type="LSTM"):
 		df_train = ImportEV().getCaltech(start_date=self.train_start, end_date=self.train_end, removeUsers=True, userSampleLimit=self.userSampleLimit)
@@ -66,6 +66,8 @@ class Model:
 			Y.append(user[self.target_feature])
 			X.append(user.drop(columns=[self.drop_feature]))
 
+		#Info about the input features
+		print("The input features are: " + str(X[0].columns))
 		self.n_features = len(X[0].columns)
 
 		#Scale the Data
@@ -117,8 +119,8 @@ class Model:
 		self.trainScore, self.valScore = [], []
 
 		for i in range(len(X_train)):
-			train_predict.append(self.mm.inverse_transform(self.model.predict(X_train[i]).reshape(-1, 1)))
-			val_predict.append(self.mm.inverse_transform(self.model.predict(X_val[i]).reshape(-1, 1)))
+			train_predict.append(self.mm.inverse_transform(self.model.predict(X_train[i]).reshape(-1, self.n_steps_out)))
+			val_predict.append(self.mm.inverse_transform(self.model.predict(X_val[i]).reshape(-1, self.n_steps_out)))
 
 			# calculate root mean squared error
 			self.trainScore.append(math.sqrt(mean_squared_error(Y_train[i][:, 0], train_predict[i][:, 0])))
@@ -166,30 +168,29 @@ class Model:
 
 		# Make and Invert predictions
 		for user in range(len(users_test_X)):
-			self.test_predict.append(self.mm.inverse_transform(self.model.predict(users_test_X[user]).reshape(-1, 1)))
+			self.test_predict.append(self.mm.inverse_transform(self.model.predict(users_test_X[user]).reshape(-1, self.n_steps_out)))
 
 			# calculate root mean squared error
 			self.testScore.append(math.sqrt(mean_squared_error(self.users_test_Y[user][:, 0], self.test_predict[user][:, 0])))
-
-		print(self.test_predict[0])
 
 		return self
 
 	def PlotTestSample(self, user=0):
 		# plot baseline and predictions
-		plt.plot(self.users_test_Y[user])
-		plt.plot(self.test_predict[user])
+		plt.plot(self.users_test_Y[user][:, -1])
+		plt.plot(self.test_predict[user][:, -1])
 		plt.show()
 
 if __name__ == "__main__":
 	#The model will always be first input
 	model = Model().create_model()
-	model = model.PredictTestSample("2018-11-09", "2019-01-01", 20)
+	model = model.PredictTestSample("2018-11-09", "2019-02-01", 25)
 	print(model.trainScore)
 	print(model.valScore)
 	print(model.testScore)
 
-	model.PlotTestSample(user=0)
+	for i in range(len(model.users_test_Y)):
+		model.PlotTestSample(user=i)
 
 	""" Ikke sikkert det skal bruges
 	cfg_list = model_configs()
