@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from P6_code.FinishedCode.importData import ImportEV
 from P6_code.FinishedCode.dataTransformation import createUsers
+import math
 
 from keras.models import Sequential
 from keras.layers import *
@@ -96,8 +97,42 @@ if __name__ == "__main__":
             validation_data=(X_val, y_val)
         )
 
-        history_dict[model.name] = history
+        #
+        trainPredict = model.predict(X_train)
+        testPredict = model.predict(X_test)
 
+        trainPredict = scaler.inverse_transform(trainPredict)
+        trainY = scaler.inverse_transform(y_train)
+        testPredict = scaler.inverse_transform(testPredict)
+        testY = scaler.inverse_transform(y_test)
+
+        # calculate root mean squared error
+        trainScore = math.sqrt(mean_squared_error(trainY[:, 0], trainPredict[:, 0]))
+        print('Train Score: %.2f RMSE' % trainScore)
+        testScore = math.sqrt(mean_squared_error(testY[:, 0], testPredict[:, 0]))
+        print('Test Score: %.2f RMSE' % testScore)
+
+        for j in range(len(df.columns)):
+            # shift train predictions for plotting
+            trainPredictPlot = np.zeros_like(y[:, j])
+            trainPredictPlot[:] = np.nan
+            trainPredictPlot[:124] = trainPredict[:, j]
+
+            # shift test predictions for plotting
+            testPredictPlot = np.zeros_like(y[:, j])
+            testPredictPlot[:] = np.nan
+            testPredictPlot[139:] = testPredict[:, j]
+
+            # plot baseline and predictions
+            plt.plot(scaler.inverse_transform(y)[:, j])
+            plt.plot(trainPredictPlot)
+            plt.plot(testPredictPlot)
+            plt.title(model.name)
+            plt.show()
+
+        #Epoch_ Val_loss
+        """
+        history_dict[model.name] = history
         for history in history_dict:
             val_loss = history_dict[history].history['val_loss']
             plt.plot(val_loss, label=history)
@@ -105,3 +140,4 @@ if __name__ == "__main__":
         plt.xlabel('Epochs')
         plt.legend()
         plt.show()
+        """
