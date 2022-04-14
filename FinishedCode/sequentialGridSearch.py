@@ -4,37 +4,17 @@ from P6_code.FinishedCode.importData import ImportEV
 from P6_code.FinishedCode.dataTransformation import createUsers
 from P6_code.FinishedCode.functions import split_sequences
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, GRU
+from keras.layers import Dense, LSTM, GRU, ReLU
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import matplotlib.pyplot as plt
-
-#Ikke sikkert den skal bruges
-def model_configs():
-	# define scope of configs
-	n_steps_in = [5, 8, 10]
-	n_nodes = [4, 8, 16]
-	n_batch = [1, 20, 150]
-
-	# create configs
-	configs = list()
-
-	for i in n_steps_in:
-		for j in n_nodes:
-			for k in n_batch:
-				cfg = [i, j, k]
-				configs.append(cfg)
-
-	print('Total configs: %d' % len(configs))
-
-	return configs
 
 class Model:
 	def __init__(self):
 		#Variables to create the model
 		self.train_start = "2018-06-01"
 		self.train_end = "2018-11-09"
-		self.userSampleLimit = 3
+		self.userSampleLimit = 6
 		self.val_split = 0.2
 		self.target_feature = 'chargingTime'
 		self.drop_feature = "kWhDelivered"
@@ -45,12 +25,12 @@ class Model:
 
 		#Model Hyperparameters (configs)
 		self.model = Sequential()
-		self.n_steps_in = 10
+		self.n_steps_in = 7
 		self.n_steps_out = 1
-		self.n_nodes = 30
+		self.n_nodes = 50
 
 		self.batch_size = 5
-		self.epochs = 20
+		self.epochs = 100
 
 	def create_model(self, type="LSTM"):
 		df_train = ImportEV().getCaltech(start_date=self.train_start, end_date=self.train_end, removeUsers=True, userSampleLimit=self.userSampleLimit)
@@ -110,6 +90,7 @@ class Model:
 			raise Exception("The type of the model should either be LSTM or GRU")
 
 		self.model.add(Dense(self.n_steps_out))
+		self.model.add(ReLU(max_value=1.0))
 		self.model.compile(optimizer='adam', loss='mse')
 
 		#Fit the data and trains the model
@@ -189,17 +170,10 @@ class Model:
 if __name__ == "__main__":
 	#The model will always be first input
 	model = Model().create_model()
-	model = model.PredictTestSample("2018-11-09", "2019-02-01", 25)
+	model = model.PredictTestSample("2018-11-09", "2019-02-01", 15)
 	print(model.trainScore)
 	print(model.valScore)
 	print(model.testScore)
 
 	for i in range(len(model.users_test_Y)):
 		model.PlotTestSample(user=i)
-
-	""" Ikke sikkert det skal bruges
-	cfg_list = model_configs()
-	results = pd.DataFrame(
-		columns=["userID", "n_steps_in", "n_nodes", "n_batch", "errorTrain", "errorTest"])
-	index = 0
-	"""
