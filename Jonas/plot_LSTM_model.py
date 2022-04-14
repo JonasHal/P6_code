@@ -37,12 +37,12 @@ if __name__ == "__main__":
     trainY, testY = y_mm[1:-train_test_cutoff + 1], y_mm[-train_test_cutoff + 1:]
 
     model = Sequential()
-    model.add(LSTM(20, return_sequences=True, input_shape=(n_steps_in, n_features)))
-    model.add(LSTM(20))
+    model.add(LSTM(5, return_sequences=True, input_shape=(n_steps_in, n_features)))
+    model.add(LSTM(5))
     model.add(ReLU())
     model.add(Dense(n_steps_out))
     model.compile(loss='mean_squared_error', optimizer='adam')
-    model.fit(trainX, trainY, epochs=1000, verbose=1)
+    history = model.fit(trainX, trainY, epochs=200, verbose=1, validation_data=(testX, testY))
 
     # make predictions
     trainPredict = model.predict(trainX)
@@ -74,4 +74,12 @@ if __name__ == "__main__":
     plt.plot(mm.inverse_transform(y_trans))
     plt.plot(trainPredictPlot)
     plt.plot(testPredictPlot)
+    plt.show()
+
+    #val_loss and loss
+    plt.plot(history.history["loss"])
+    plt.plot(history.history["val_loss"])
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
     plt.show()

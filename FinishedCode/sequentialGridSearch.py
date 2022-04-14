@@ -1,5 +1,7 @@
 import math
 import numpy as np
+import pandas as pd
+
 from P6_code.FinishedCode.importData import ImportEV
 from P6_code.FinishedCode.dataTransformation import createUsers
 from P6_code.FinishedCode.functions import split_sequences
@@ -15,22 +17,22 @@ class Model:
 		self.train_start = "2018-06-01"
 		self.train_end = "2018-11-09"
 		self.userSampleLimit = 6
-		self.val_split = 0.2
-		self.target_feature = 'chargingTime'
-		self.drop_feature = "kWhDelivered"
+		self.val_split = 0.1
+		self.target_feature = "kWhDelivered"
+		self.drop_feature = 'chargingTime'
 
 		#Scalers
-		self.ss = StandardScaler()
+		self.ss = MinMaxScaler(feature_range=(0, 1))
 		self.mm = MinMaxScaler(feature_range=(0, 1))
 
 		#Model Hyperparameters (configs)
 		self.model = Sequential()
-		self.n_steps_in = 7
+		self.n_steps_in = 4
 		self.n_steps_out = 1
-		self.n_nodes = 50
+		self.n_nodes = 6
 
-		self.batch_size = 5
-		self.epochs = 100
+		self.batch_size = 25
+		self.epochs = 50
 
 	def create_model(self, type="LSTM"):
 		df_train = ImportEV().getCaltech(start_date=self.train_start, end_date=self.train_end, removeUsers=True, userSampleLimit=self.userSampleLimit)
@@ -90,13 +92,13 @@ class Model:
 			raise Exception("The type of the model should either be LSTM or GRU")
 
 		self.model.add(Dense(self.n_steps_out))
-		self.model.add(ReLU(max_value=1.0))
 		self.model.compile(optimizer='adam', loss='mse')
 
 		#Fit the data and trains the model
 		progress = 0
+		self.history = []
 		for i in range(len(X_train)):
-			self.model.fit(x=X_train[i], y=Y_train[i], batch_size=self.batch_size, epochs=self.epochs, verbose=0)
+			self.history.append(self.model.fit(x=X_train[i], y=Y_train[i], batch_size=self.batch_size, epochs=self.epochs, verbose=1, validation_data=(X_val[i], Y_val[i])))
 			progress += 1
 			print("Number of Users trained on: " + str(progress) + "/" + str(len(usersID)))
 
@@ -167,6 +169,22 @@ class Model:
 		plt.plot(self.test_predict[user][:, 0])
 		plt.show()
 
+	def PlotLoss(self):
+		df = pd.DataFrame(columns=range(self.epochs))
+		for i in range(len(self.history)):
+			print(self.history[i].history["loss"])
+		#	df.append(self.history[i].history["loss"])
+		#	df.append(self.history[i].history["val_loss"])
+
+		print(df)
+		"""
+		plt.plot()
+		plt.plot()
+		plt.xlabel('Epochs')
+		plt.ylabel('Loss')
+		plt.show()
+		"""
+
 if __name__ == "__main__":
 	#The model will always be first input
 	model = Model().create_model()
@@ -175,5 +193,8 @@ if __name__ == "__main__":
 	print(model.valScore)
 	print(model.testScore)
 
-	for i in range(len(model.users_test_Y)):
-		model.PlotTestSample(user=i)
+	model.PlotLoss()
+
+	#for i in range(len(model.users_test_Y)):
+	#	model.PlotTestSample(user=i)
+
