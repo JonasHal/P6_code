@@ -170,20 +170,19 @@ class Model:
 		plt.show()
 
 	def PlotLoss(self):
-		df = pd.DataFrame(columns=range(self.epochs))
-		for i in range(len(self.history)):
-			print(self.history[i].history["loss"])
-		#	df.append(self.history[i].history["loss"])
-		#	df.append(self.history[i].history["val_loss"])
+		loss = [x.history["loss"] for x in self.history]
+		val_loss = [x.history["val_loss"] for x in self.history]
 
-		print(df)
-		"""
-		plt.plot()
-		plt.plot()
+		loss = [sum(x) / len(x) for x in zip(*loss)]
+		val_loss = [sum(x) / len(x) for x in zip(*val_loss)]
+
+		plt.plot(loss, label="train_loss")
+		plt.plot(val_loss, label="tval_loss")
 		plt.xlabel('Epochs')
 		plt.ylabel('Loss')
+		plt.legend()
 		plt.show()
-		"""
+
 
 if __name__ == "__main__":
 	#The model will always be first input
