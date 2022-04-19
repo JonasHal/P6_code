@@ -42,49 +42,36 @@ if __name__ == "__main__":
     print(X_train.shape, y_train.shape, X_val.shape, y_val.shape, X_test.shape, y_test.shape)
 
     name = '1_Layer'
-    cnn_model_1 = Sequential([
+    lstm_model_1 = Sequential([
         InputLayer((7, 2)),
-        Conv1D(64, kernel_size=2, activation='relu', name='Conv1D-1'),
-        MaxPooling1D(pool_size=2),
-        Dropout(0.2, name='Dropout'),
-        Flatten(),
-        Dense(32, activation='relu', name='Dense'),
+        LSTM(64, activation='relu', name='LSTM1'),
+        Dense(64, activation='relu', name='Dense'),
         Dense(2)
     ], name=name)
 
     name = '2_Layer'
-    cnn_model_2 = Sequential([
+    lstm_model_2 = Sequential([
         InputLayer((7, 2)),
-        Conv1D(64, kernel_size=2, activation='relu', name='Conv1D-1'),
-        MaxPooling1D(pool_size=2, name='MaxPool'),
-        Dropout(0.2, name='Dropout-1'),
-        Conv1D(64, kernel_size=2, activation='relu', name='Conv1D-2'),
-        Dropout(0.25, name='Dropout-2'),
-        Flatten(),
+        LSTM(64, activation='relu', return_sequences=True, name='LSTM1'),
+        LSTM(64, activation='relu', name='LSTM2'),
         Dense(64, activation='relu', name='Dense'),
         Dense(2)
     ], name=name)
 
     name='3_layer'
-    cnn_model_3 = Sequential([
+    lstm_model_3 = Sequential([
         InputLayer((7, 2)),
-        Conv1D(64, kernel_size=2, activation='relu', kernel_initializer='he_normal', name='Conv1D-1'),
-        MaxPooling1D(pool_size=2, name='MaxPool'),
-        Dropout(0.25, name='Dropout-1'),
-        Conv1D(64, kernel_size=2, activation='relu', name='Conv1D-2'),
-        Dropout(0.25, name='Dropout-2'),
-        Conv1D(128, kernel_size=2, activation='relu', name='Conv1D-3'),
-        Dropout(0.4, name='Dropout-3'),
-        Flatten(),
-        Dense(128, activation='relu', name='Dense'),
-        Dropout(0.4, name='Dropout'),
+        LSTM(64, activation='relu', kernel_initializer='he_normal',return_sequences=True, name='LSTM1'),
+        LSTM(64, activation='relu', return_sequences=True, name='LSTM2'),
+        LSTM(64, activation='relu', name='LSTM3'),
+        Dense(64, activation='relu', name='Dense'),
         Dense(2)
     ], name=name)
 
-    cnn_models = [cnn_model_1, cnn_model_2, cnn_model_3]
+    lstm_models = [lstm_model_1, lstm_model_2, lstm_model_3]
 
     history_dict = {}
-    for model in cnn_models:
+    for model in lstm_models:
         model.compile(
             loss='mse',
             optimizer='adam',
@@ -97,7 +84,7 @@ if __name__ == "__main__":
             validation_data=(X_val, y_val)
         )
 
-        #
+        """
         trainPredict = model.predict(X_train)
         testPredict = model.predict(X_test)
 
@@ -138,6 +125,6 @@ if __name__ == "__main__":
             plt.plot(val_loss, label=history)
         plt.ylabel('Validation Loss')
         plt.xlabel('Epochs')
+        plt.title('LSTM loss')
         plt.legend()
         plt.show()
-        """
