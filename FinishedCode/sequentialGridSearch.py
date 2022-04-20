@@ -14,10 +14,10 @@ import matplotlib.pyplot as plt
 class Model:
 	def __init__(self):
 		#Variables to create the model
-		self.train_start = "2018-06-01"
-		self.train_end = "2018-11-09"
-		self.userSampleLimit = 6
-		self.val_split = 0.1
+		self.train_start = "2018-09-01"
+		self.train_end = "2018-12-01"
+		self.userSampleLimit = 5
+		self.val_split = 0.2
 		self.target_feature = "kWhDelivered"
 		self.drop_feature = 'chargingTime'
 
@@ -27,12 +27,12 @@ class Model:
 
 		#Model Hyperparameters (configs)
 		self.model = Sequential()
-		self.n_steps_in = 4
+		self.n_steps_in = 7
 		self.n_steps_out = 1
-		self.n_nodes = 6
+		self.n_nodes = 20
 
 		self.batch_size = 25
-		self.epochs = 50
+		self.epochs = 200
 
 	def create_model(self, type="LSTM"):
 		df_train = ImportEV().getCaltech(start_date=self.train_start, end_date=self.train_end, removeUsers=True, userSampleLimit=self.userSampleLimit)
@@ -91,8 +91,10 @@ class Model:
 		else:
 			raise Exception("The type of the model should either be LSTM or GRU")
 
+		self.title = type
+
 		self.model.add(Dense(self.n_steps_out))
-		self.model.compile(optimizer='adam', loss='mse')
+		self.model.compile(optimizer='adam', loss='mse', metrics=["mean_absolute_error"])
 
 		#Fit the data and trains the model
 		progress = 0
@@ -177,7 +179,8 @@ class Model:
 		val_loss = [sum(x) / len(x) for x in zip(*val_loss)]
 
 		plt.plot(loss, label="train_loss")
-		plt.plot(val_loss, label="tval_loss")
+		plt.plot(val_loss, label="val_loss")
+		plt.title(self.title)
 		plt.xlabel('Epochs')
 		plt.ylabel('Loss')
 		plt.legend()
@@ -186,14 +189,13 @@ class Model:
 
 if __name__ == "__main__":
 	#The model will always be first input
-	model = Model().create_model()
-	model = model.PredictTestSample("2018-11-09", "2019-02-01", 15)
+	model = Model().create_model(type="LSTM")
+	model = model.PredictTestSample("2018-12-01", "2019-01-01", 15)
 	print(model.trainScore)
 	print(model.valScore)
 	print(model.testScore)
 
 	model.PlotLoss()
 
-	#for i in range(len(model.users_test_Y)):
-	#	model.PlotTestSample(user=i)
+	model.PlotTestSample(user=3)
 
