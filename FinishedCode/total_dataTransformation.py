@@ -19,6 +19,7 @@ class createTotal:
 
         data_hourly = pd.DataFrame(index=index_values, columns=['total_kWhDelivered', 'carsCharging', 'carsIdle']).fillna(0)
 
+        print("Counting Cars...")
         for i in range(len(self.data)):
             charging_per_hour = self.data.loc[i, 'kWhDelivered']/self.data.loc[i, 'chargingTime']
             connection_time = self.data.loc[i, 'connectionTime'].round(freq='H').tz_localize(None)
@@ -33,6 +34,6 @@ class createTotal:
 
 if __name__ == '__main__':
     start, end = "2018-05-01", "2018-11-01"
-    df = ImportEV().getCaltech(start_date=start, end_date=end)
+    df = ImportEV().getBoth(start_date=start, end_date=end)
     Total_df = createTotal(df, start, end).getTotalData()
     print(Total_df.to_string())
