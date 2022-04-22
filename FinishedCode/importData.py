@@ -82,6 +82,7 @@ class ImportEV:
         jpl = pd.DataFrame(json.load(open(Path('../Data/acn_jpl.json'), 'r'))['_items'])
 
         data = pd.concat([caltech, jpl], ignore_index=True)
+        data = data.sort_values(by="connectionTime").reset_index(drop=True)
 
         for i in range(len(data["doneChargingTime"])):
             if data["doneChargingTime"][i] is None:
