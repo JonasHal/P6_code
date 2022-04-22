@@ -26,7 +26,7 @@ class ImportEV:
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
     def getJPL(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -48,7 +48,7 @@ class ImportEV:
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
     def getOffice(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -70,7 +70,7 @@ class ImportEV:
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
     def getBoth(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -95,7 +95,7 @@ class ImportEV:
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
 
 class ImportWeather:
