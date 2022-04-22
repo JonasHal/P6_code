@@ -13,6 +13,11 @@ class ImportEV:
         :rtype:
         """
         data = pd.DataFrame(json.load(open(Path('../Data/acn_caltech.json'), 'r'))['_items'])
+
+        for i in range(len(data["doneChargingTime"])):
+            if data["doneChargingTime"][i] is None:
+                data.loc[i, "doneChargingTime"] = data["disconnectTime"][i]
+
         data["connectionTime"] = pd.to_datetime(data["connectionTime"]) - timedelta(hours=7)
         data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
@@ -21,7 +26,7 @@ class ImportEV:
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
     def getJPL(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -30,6 +35,11 @@ class ImportEV:
         :rtype:
         """
         data = pd.DataFrame(json.load(open(Path('../Data/acn_jpl.json'), 'r'))['_items'])
+
+        for i in range(len(data["doneChargingTime"])):
+            if data["doneChargingTime"][i] is None:
+                data.loc[i, "doneChargingTime"] = data["disconnectTime"][i]
+
         data["connectionTime"] = pd.to_datetime(data["connectionTime"]) - timedelta(hours=7)
         data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
@@ -38,7 +48,7 @@ class ImportEV:
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
     def getOffice(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -47,6 +57,11 @@ class ImportEV:
         :rtype:
         """
         data = pd.DataFrame(json.load(open(Path('../Data/acn_office1.json'), 'r'))['_items'])
+
+        for i in range(len(data["doneChargingTime"])):
+            if data["doneChargingTime"][i] is None:
+                data.loc[i, "doneChargingTime"] = data["disconnectTime"][i]
+
         data["connectionTime"] = pd.to_datetime(data["connectionTime"]) - timedelta(hours=7)
         data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
@@ -55,7 +70,7 @@ class ImportEV:
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
     def getBoth(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -67,6 +82,11 @@ class ImportEV:
         jpl = pd.DataFrame(json.load(open(Path('../Data/acn_jpl.json'), 'r'))['_items'])
 
         data = pd.concat([caltech, jpl], ignore_index=True)
+
+        for i in range(len(data["doneChargingTime"])):
+            if data["doneChargingTime"][i] is None:
+                data.loc[i, "doneChargingTime"] = data["disconnectTime"][i]
+
         data["connectionTime"] = pd.to_datetime(data["connectionTime"]) - timedelta(hours=7)
         data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
@@ -75,7 +95,7 @@ class ImportEV:
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
 
 class ImportWeather:
