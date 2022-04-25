@@ -15,8 +15,9 @@ import matplotlib.pyplot as plt
 class Model:
     def __init__(self):
         # Variables to create the model
-        self.train_start = "2018-06-01"
-        self.train_end = "2018-12-01"
+        self.data = "Caltech"
+        self.train_start = "2018-10-01"
+        self.train_end = "2018-11-01"
         self.val_split = 0.2
 
         # Scaler
@@ -29,15 +30,15 @@ class Model:
         self.n_nodes = 50
 
         self.batch_size = 200
-        self.epochs = 1000
+        self.epochs = 100
 
-    def create_model(self, type="LSTM", data="Caltech"):
-        if data == "Caltech":
+    def create_model(self, type="LSTM"):
+        if self.data == "Caltech":
             df = ImportEV().getCaltech(start_date=self.train_start, end_date=self.train_end)
-        elif data == "JPL":
+        elif self.data == "JPL":
             df = ImportEV().getJPL(start_date=self.train_start, end_date=self.train_end)
-        elif data == "Office":
-            df = ImportEV().getJPL(start_date=self.train_start, end_date=self.train_end)
+        elif self.data == "Office":
+            df = ImportEV().getOffice(start_date=self.train_start, end_date=self.train_end)
         else:
             print("Error, data parameter should be Caltech, JPL or Office")
 
@@ -87,8 +88,6 @@ class Model:
         # Make and Invert predictions
         train_predict = self.scaler.inverse_transform(self.model.predict(X_train)[:,-1,:].reshape(-1, self.n_features))
         val_predict = self.scaler.inverse_transform(self.model.predict(X_val)[:,-1,:].reshape(-1, self.n_features))
-        print(train_predict.shape)
-        print(Y_train[:, -1, :].shape)
 
         # calculate root mean squared error
         self.trainScore = math.sqrt(mean_squared_error(Y_train[:, -1, :].reshape(-1, self.n_features), train_predict))
@@ -97,60 +96,46 @@ class Model:
         # Return the model and the scalers
         return self
 
-    def PredictTestSample(self, start, end, userSampleLimit):
+    def PredictTestSample(self, start, end):
+        start = str(pd.to_datetime(start) - pd.Timedelta(1, "D"))
+        print(start)
         # Import the data
-        df_test = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True,
-                                        userSampleLimit=userSampleLimit)
-        users = createTotal(df_test, start, end)
+        if self.data == "Caltech":
+            df = ImportEV().getCaltech(start_date=start, end_date=end)
+        elif self.data == "JPL":
+            df = ImportEV().getJPL(start_date=start, end_date=end)
+        elif self.data == "Office":
+            df = ImportEV().getOffice(start_date=start, end_date=end)
+        else:
+            print("Error, data parameter should be Caltech, JPL or Office")
 
-        # Save the user_ids for return
-        user_id = users.data.userID.unique()
-        user_df_test = []
+        total = createTotal(df, start, end).getTotalData()
 
-        for user in user_id:
-            user_df_test.append(users.getUserData(user=user))
+        print("Making Model")
 
         # Create Input and Target Features
-        X_test, Y_test = [], []
-
-        for user in user_df_test:
-            Y_test.append(user[self.target_feature])
-            X_test.append(user.drop(columns=[self.drop_feature]))
+        X, Y = total.copy(), total.copy()
 
         # Scale the Data
-        X_test_scaled = []
-
-        for user in X_test:
-            X_test_scaled.append(self.ss.transform(user))
+        X_trans = self.scaler.transform(X)
+        Y_trans = self.scaler.transform(Y)
 
         # Split the data for prediction in the RNN models
-        users_test_X, self.users_test_Y = [], []
-
-        for user in range(len(X_test_scaled)):
-            user_test_X, user_test_Y = split_sequences(X_test_scaled[user], np.array(Y_test[user]).reshape(-1, 1),
-                                                       self.n_steps_in, self.n_steps_out)
-            users_test_X.append(user_test_X)
-            self.users_test_Y.append(user_test_Y)
-
-        # Predict the data
-        self.test_predict = []
-        self.testScore = []
+        X_test, Y_test = split_sequences(X_trans, Y_trans, self.n_steps_in, self.n_steps_out)
 
         # Make and Invert predictions
-        for user in range(len(users_test_X)):
-            self.test_predict.append(
-                self.mm.inverse_transform(self.model.predict(users_test_X[user]).reshape(-1, self.n_steps_out)))
+        self.test_predict = self.scaler.inverse_transform(
+            self.model.predict(X_test)[:, -1, :].reshape(-1, self.n_features))
+        self.Y_test = self.scaler.inverse_transform(Y_test[:, -1, :].reshape(-1, self.n_features))
 
-            # calculate root mean squared error
-            self.testScore.append(
-                math.sqrt(mean_squared_error(self.users_test_Y[user][:, 0], self.test_predict[user][:, 0])))
+        self.testScore = math.sqrt(mean_squared_error(self.Y_test, self.test_predict))
 
         return self
 
-    def PlotTestSample(self, user=0):
+    def PlotTestSample(self, column_to_predict=0):
         # plot baseline and predictions
-        plt.plot(self.users_test_Y[user][:, 0])
-        plt.plot(self.test_predict[user][:, 0])
+        plt.plot(self.Y_test[:, column_to_predict])
+        plt.plot(self.test_predict[:, column_to_predict])
         plt.show()
 
     def PlotLoss(self):
@@ -168,11 +153,12 @@ class Model:
 if __name__ == "__main__":
     # The model will always be first input
     model = Model().create_model(type="LSTM")
-    #model = model.PredictTestSample("2018-12-01", "2019-01-01", 15)
+    model = model.PredictTestSample("2018-10-31", "2018-11-04")
     print(model.trainScore)
     print(model.valScore)
-    #print(model.testScore)
+    print(model.testScore)
 
-    model.PlotLoss()
+    #model.PlotLoss()
 
-    #model.PlotTestSample(user=3)
+    for i in range(model.n_features):
+        model.PlotTestSample(column_to_predict=i)
