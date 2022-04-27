@@ -23,6 +23,8 @@ class ImportEV:
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
         data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
 
+        data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
+
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
 
@@ -45,6 +47,8 @@ class ImportEV:
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
         data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
 
+        data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
+
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
 
@@ -66,6 +70,8 @@ class ImportEV:
         data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
         data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
+
+        data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
 
         if removeUsers:
             data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
@@ -91,6 +97,8 @@ class ImportEV:
         data["disconnectTime"] = pd.to_datetime(data["disconnectTime"]) - timedelta(hours=7)
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
         data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
+
+        data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
 
         data = data.sort_values(by="connectionTime").reset_index(drop=True)
 
@@ -146,4 +154,4 @@ if __name__ == "__main__":
     df = ImportEV().getBoth(start_date="2001-10-01", end_date="2022-10-04", removeUsers=True)
     #df = ImportEV().getJPL(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=10)
     #df = ImportEV().getBoth(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=1)
-    print(df.loc[:, ].to_string())
+    print(df.columns)
