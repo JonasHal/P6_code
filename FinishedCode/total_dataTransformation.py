@@ -40,9 +40,14 @@ class createTotal:
         data_hourly = data_hourly[(data_hourly.index >= real_start) & (data_hourly.index < self.end)]
         return data_hourly
 
+    def remove_outliers(self):
+        q1, q3 = np.quantile(self.data['chargingTime'], [0.25, 0.75])
+        self.data = self.data[self.data['chargingTime'] < q3 + 1.5 * (q3 - q1)]
+        return self
+
 
 if __name__ == '__main__':
     start, end = "2018-10-01", "2018-11-01"
     df = ImportEV().getBoth(start_date=start, end_date=end)
-    Total_df = createTotal(df, start, end).getTotalData()
+    Total_df = createTotal(df, start, end).remove_outliers().getTotalData()
     print(Total_df.to_string())
