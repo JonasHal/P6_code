@@ -25,12 +25,12 @@ class Model:
 
         # Model Hyperparameters (configs)
         self.model = Sequential()
-        self.n_steps_in = 20
-        self.n_steps_out = 10
+        self.n_steps_in = 40
+        self.n_steps_out = 20
         self.n_nodes = 50
 
-        self.batch_size = 200
-        self.epochs = 100
+        self.batch_size = 100
+        self.epochs = 50
 
     def create_model(self, type="LSTM"):
         if self.data == "Caltech":
@@ -112,6 +112,7 @@ class Model:
         total = createTotal(df, start, end).getTotalData()
 
         print("Making Model")
+        print(total)
 
         # Create Input and Target Features
         X, Y = total.copy(), total.copy()
@@ -153,12 +154,12 @@ class Model:
 if __name__ == "__main__":
     # The model will always be first input
     model = Model().create_model(type="LSTM")
-    model = model.PredictTestSample("2018-10-31", "2018-11-04")
+    model = model.PredictTestSample("2018-11-01", "2018-11-15")
     print(model.trainScore)
     print(model.valScore)
     print(model.testScore)
 
-    #model.PlotLoss()
+    model.PlotLoss()
 
     for i in range(model.n_features):
         model.PlotTestSample(column_to_predict=i)

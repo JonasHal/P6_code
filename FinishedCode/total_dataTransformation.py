@@ -14,9 +14,8 @@ class createTotal:
         self.data["chargingTime"].replace(0, 1, inplace=True)
         self.data["idleTime"] = np.floor((pd.to_datetime(self.data["disconnectTime"]) - pd.to_datetime(self.data["doneChargingTime"])) / np.timedelta64(1, 'h')).astype('int')
 
-        periods = pd.to_datetime(self.end) + np.timedelta64(4, 'D') - pd.to_datetime(self.start)
+        periods = pd.to_datetime(self.end) + np.timedelta64(6, 'D') - pd.to_datetime(self.start)
         index_values = (pd.date_range(pd.to_datetime(self.start) - pd.Timedelta(1, 'D'), periods=periods.days*24, freq='H'))
-
         data_hourly = pd.DataFrame(index=index_values, columns=['total_kWhDelivered', 'carsCharging', 'carsIdle']).fillna(0)
 
         print("Counting Cars...")
@@ -33,8 +32,12 @@ class createTotal:
             for k in range(self.data.loc[i, 'idleTime']):
                 data_hourly.loc[connection_time + pd.Timedelta(self.data.loc[i, 'chargingTime'] + k, 'h'), "carsIdle"] += 1
 
+        real_start = pd.to_datetime(self.start) + np.timedelta64(1, 'D')
+
+        data_hourly.loc[:, ("Weekday")] = data_hourly.index.day_of_week
+
         #Remove eccess data
-        data_hourly = data_hourly[(data_hourly.index >= self.start) & (data_hourly.index < self.end)]
+        data_hourly = data_hourly[(data_hourly.index >= real_start) & (data_hourly.index < self.end)]
         return data_hourly
 
 
