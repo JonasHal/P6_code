@@ -79,6 +79,9 @@ class Model:
         self.model.add(RepeatVector(self.n_steps_out))
         self.model.add(LSTM(self.n_nodes, activation='relu', return_sequences=True))
         self.model.add(TimeDistributed(Dense(self.n_features)))
+
+        # Printing the Structure of the model and compile it
+        print(self.model.summary())
         self.model.compile(optimizer='adam', loss='mse')
 
         # Fit the data and trains the model

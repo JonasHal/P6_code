@@ -92,8 +92,10 @@ class Model:
 			raise Exception("The type of the model should either be LSTM or GRU")
 
 		self.title = type
-
 		self.model.add(Dense(self.n_steps_out))
+
+		#Printing the Structure of the model and compile it
+		print(self.model.summary())
 		self.model.compile(optimizer='adam', loss='mse', metrics=["mean_absolute_error"])
 
 		#Fit the data and trains the model
