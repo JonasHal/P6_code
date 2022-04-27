@@ -16,7 +16,7 @@ class Model:
 		#Variables to create the model
 		self.train_start = "2018-09-01"
 		self.train_end = "2018-12-01"
-		self.userSampleLimit = 5
+		self.userSampleLimit = 30
 		self.val_split = 0.2
 		self.target_feature = "kWhDelivered"
 		self.drop_feature = 'chargingTime'
@@ -27,15 +27,15 @@ class Model:
 
 		#Model Hyperparameters (configs)
 		self.model = Sequential()
-		self.n_steps_in = 7
+		self.n_steps_in = 4
 		self.n_steps_out = 1
-		self.n_nodes = 20
+		self.n_nodes = 3
 
 		self.batch_size = 25
 		self.epochs = 200
 
 	def create_model(self, type="LSTM"):
-		df_train = ImportEV().getCaltech(start_date=self.train_start, end_date=self.train_end, removeUsers=True, userSampleLimit=self.userSampleLimit)
+		df_train = ImportEV().getBoth(start_date=self.train_start, end_date=self.train_end, removeUsers=True, userSampleLimit=self.userSampleLimit)
 		users = createUsers(df_train, self.train_start, self.train_end)
 		usersID = users.data.userID.unique()
 		users_df = []
@@ -93,6 +93,7 @@ class Model:
 
 		self.title = type
 
+		self.model.add(ReLU())
 		self.model.add(Dense(self.n_steps_out))
 		self.model.compile(optimizer='adam', loss='mse', metrics=["mean_absolute_error"])
 
