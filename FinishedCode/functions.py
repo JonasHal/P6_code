@@ -11,6 +11,6 @@ def split_sequences(input_sequences, output_sequence, n_steps_in, n_steps_out):
             break
 
         # gather input and output of the pattern
-        seq_x, seq_y = input_sequences[i:end_ix], output_sequence[end_ix-1:out_end_ix, -1]
+        seq_x, seq_y = input_sequences[i:end_ix], output_sequence[end_ix-1:out_end_ix]
         X.append(seq_x), y.append(seq_y)
     return np.array(X), np.array(y)

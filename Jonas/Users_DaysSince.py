@@ -16,7 +16,7 @@ class Model:
 		#Variables to create the model
 		self.train_start = "2018-09-01"
 		self.train_end = "2018-12-01"
-		self.userSampleLimit = 20
+		self.userSampleLimit = 10
 		self.val_split = 0.2
 		self.target_feature = "kWhDelivered"
 		self.drop_feature = 'chargingTime'
@@ -27,11 +27,11 @@ class Model:
 
 		#Model Hyperparameters (configs)
 		self.model = Sequential()
-		self.n_steps_in = 4
+		self.n_steps_in = 6
 		self.n_steps_out = 1
 		self.n_nodes = 20
 
-		self.batch_size = 4
+		self.batch_size = 6
 		self.epochs = 200
 
 	def create_model(self, type="LSTM"):
@@ -92,8 +92,10 @@ class Model:
 			raise Exception("The type of the model should either be LSTM or GRU")
 
 		self.title = type
-
 		self.model.add(Dense(self.n_steps_out))
+
+		#Printing the Structure of the model and compile it
+		print(self.model.summary())
 		self.model.compile(optimizer='adam', loss='mse', metrics=["mean_absolute_error"])
 
 		#Fit the data and trains the model
