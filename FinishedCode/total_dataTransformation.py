@@ -14,8 +14,8 @@ class createTotal:
         self.data["chargingTime"].replace(0, 1, inplace=True)
         self.data["idleTime"] = np.floor((pd.to_datetime(self.data["disconnectTime"]) - pd.to_datetime(self.data["doneChargingTime"])) / np.timedelta64(1, 'h')).astype('int')
 
-        periods = pd.to_datetime(self.end) + np.timedelta64(6, 'D') - pd.to_datetime(self.start)
-        index_values = (pd.date_range(pd.to_datetime(self.start) - pd.Timedelta(1, 'D'), periods=periods.days*24, freq='H'))
+        periods = pd.to_datetime(self.end) + np.timedelta64(10, 'D') - pd.to_datetime(self.start)
+        index_values = (pd.date_range(pd.to_datetime(self.start) - pd.Timedelta(2, 'D'), periods=periods.days*24, freq='H'))
         data_hourly = pd.DataFrame(index=index_values, columns=['total_kWhDelivered', 'carsCharging', 'carsIdle']).fillna(0)
 
         print("Counting Cars...")
