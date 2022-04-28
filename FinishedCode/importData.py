@@ -26,9 +26,9 @@ class ImportEV:
         data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
 
         if removeUsers:
-            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
+            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
     def getJPL(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -50,9 +50,9 @@ class ImportEV:
         data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
 
         if removeUsers:
-            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
+            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
     def getOffice(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -74,9 +74,9 @@ class ImportEV:
         data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
 
         if removeUsers:
-            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
+            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
     def getBoth(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -103,9 +103,9 @@ class ImportEV:
         data = data.sort_values(by="connectionTime").reset_index(drop=True)
 
         if removeUsers:
-            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
+            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
 
-        return data
+        return data.reset_index(drop=True)
 
 
 class ImportWeather:

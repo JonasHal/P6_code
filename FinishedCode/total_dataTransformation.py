@@ -34,7 +34,7 @@ class createTotal:
 
         real_start = pd.to_datetime(self.start) + np.timedelta64(1, 'D')
 
-        data_hourly.loc[:, ("Weekday")] = data_hourly.index.day_of_week
+        #data_hourly.loc[:, ("Weekday")] = data_hourly.index.day_of_week
 
         #Remove eccess data
         data_hourly = data_hourly[(data_hourly.index >= real_start) & (data_hourly.index < self.end)]

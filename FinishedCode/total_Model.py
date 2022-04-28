@@ -17,7 +17,7 @@ class Model:
         # Variables to create the model
         self.data = "Caltech"
         self.train_start = "2018-10-01"
-        self.train_end = "2018-11-01"
+        self.train_end = "2018-12-01"
         self.val_split = 0.2
 
         # Scaler
@@ -25,12 +25,12 @@ class Model:
 
         # Model Hyperparameters (configs)
         self.model = Sequential()
-        self.n_steps_in = 40
-        self.n_steps_out = 20
-        self.n_nodes = 50
+        self.n_steps_in = 25
+        self.n_steps_out = 10
+        self.n_nodes = 10
 
-        self.batch_size = 100
-        self.epochs = 50
+        self.batch_size = 25
+        self.epochs = 500
 
     def create_model(self, type="LSTM"):
         if self.data == "Caltech":
@@ -101,7 +101,7 @@ class Model:
 
     def PredictTestSample(self, start, end):
         start = str(pd.to_datetime(start) - pd.Timedelta(1, "D"))
-        print(start)
+
         # Import the data
         if self.data == "Caltech":
             df = ImportEV().getCaltech(start_date=start, end_date=end)
@@ -157,7 +157,7 @@ class Model:
 if __name__ == "__main__":
     # The model will always be first input
     model = Model().create_model(type="LSTM")
-    model = model.PredictTestSample("2018-11-01", "2018-11-15")
+    model = model.PredictTestSample("2018-12-01", "2019-01-01")
     print(model.trainScore)
     print(model.valScore)
     print(model.testScore)
