@@ -27,7 +27,7 @@ class Model:
         self.model = Sequential()
         self.n_steps_in = 25
         self.n_steps_out = 10
-        self.n_nodes = 10
+        self.n_nodes = 64
 
         self.batch_size = 25
         self.epochs = 500
