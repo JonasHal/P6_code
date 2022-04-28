@@ -38,27 +38,17 @@ if __name__ == "__main__":
 
     scaler = StandardScaler()
     df_scaled = scaler.fit_transform(df)
-    # mm = MinMaxScaler(feature_range=(0, 1))
 
-    trainX = []
-    trainY = []
+    X, y = df_to_X_y(df_scaled)
 
-    n_feature = 1
-    n_past = 4
-
-    for i in range(n_past, len(df_scaled) - n_feature + 1):
-        trainX.append(df_scaled[i - n_past:i, 0:df.shape[1]])
-        trainY.append(df_scaled[i + n_feature - 1:i + n_feature, 0])
-
-    trainX, trainY = np.array(trainX), np.array(trainY)
-
-    print('trainX shape == {}.'.format(trainX.shape))
-    print('trainY shape == {}.'.format(trainY.shape))
+    X_train, y_train = X[:124], y[:124]
+    X_val, y_val = X[124:139], y[124:139]
+    X_test, y_test = X[139:], y[139:]
 
     model = Sequential()
     # LSTM
     model.add(InputLayer((4,2)))
-    model.add(LSTM(64, return_sequences=True))
+    model.add(LSTM(64, activation='relu', return_sequences=True))
     # model.add(LSTM(input_shape = (look_back,1), input_dim=1, output_dim=6, return_sequences=True))
     # model.add(Dense(1))
     # CNN
@@ -75,7 +65,7 @@ if __name__ == "__main__":
     # model.add(Dropout(0.25))
 
     model.add(Dropout(0.25))
-    model.add(Activation('relu'))  # ReLU : y = max(0,x)
+    model.add(Activation('relu'))
     model.add(Flatten())
     model.add(Dense(2))
     model.add(Activation('linear'))
@@ -84,7 +74,46 @@ if __name__ == "__main__":
 
     # training the train data with n epoch
     model.compile(loss="mse", optimizer="Adam")  # adam
-    model.fit(trainX,
-              trainY,
-              epochs=100,
-              batch_size=80, verbose=1)
+    history = model.fit(X_train,
+              y_train,
+              epochs=200,
+              batch_size=80, verbose=1, shuffle=False, validation_data= (X_val, y_val))
+    # plot the loss
+    '''
+    val_loss = history.history['val_loss']
+    plt.plot(val_loss, label=history)
+    plt.ylabel('Validation Loss')
+    plt.xlabel('Epochs')
+    plt.title('LSTM-CNN loss')
+    plt.legend()
+    plt.show()
+    '''
+    testPredict = model.predict(X_test)
+
+    predictions = scaler.inverse_transform(testPredict)
+    y_test = scaler.inverse_transform(y_test)
+
+    print(predictions)
+    print(predictions[:, 0])
+    print(predictions[:, 1])
+
+    print('The RMSE is ', '%e' % sqrt(mean_squared_error()))
+    print('The RMAE is ', '%e' % sqrt(
+        mean_absolute_error(df.loc[df.index >= df.index[int(len(df.index) * 0.8)], 'Dollar'],
+                            df.loc[df.index >= df.index[int(len(df.index) * 0.8)], 'Pred'])))
+    print('The MAPE is ', '%e' % mape(df.loc[df.index >= df.index[int(len(df.index) * 0.8)], 'Dollar'],
+                                      df.loc[df.index >= df.index[int(len(df.index) * 0.8)], 'Pred']))
+
+    chargingTime_preds, kWhDelivered_preds = predictions[:, 0], predictions[:, 1]
+    chargingTime_actuals, kWhDelivered_actuals = y_test[:, 0], y_test[:, 1]
+    df = pd.DataFrame(data={'chargingTime Predictions': chargingTime_preds,
+                            'chargingTime Actuals': chargingTime_actuals,
+                            'kWhDelivered Predictions': kWhDelivered_preds,
+                            'kWhDelivered Actuals': kWhDelivered_actuals
+                            })
+    print(df.to_string())
+
+    plt.plot(df['kWhDelivered Predictions'])
+    plt.plot(df['kWhDelivered Actuals'])
+    plt.legend(['Predictions', 'Actuals'])
+    plt.show()
