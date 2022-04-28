@@ -42,7 +42,7 @@ class createTotal:
 
     def remove_outliers(self):
         q1, q3 = np.quantile(self.data['chargingTime'], [0.25, 0.75])
-        self.data = self.data[self.data['chargingTime'] < q3 + 1.5 * (q3 - q1)]
+        self.data = self.data[self.data['chargingTime'] < q3 + 1.5 * (q3 - q1)].reset_index(drop=True)
         return self
 
 
