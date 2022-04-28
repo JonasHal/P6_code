@@ -50,9 +50,9 @@ if __name__ == "__main__":
 
     # invert predictions
     trainPredict = mm.inverse_transform(trainPredict)
-    trainY = mm.inverse_transform(trainY)
+    trainY = mm.inverse_transform(trainY.reshape(-1, n_steps_out))
     testPredict = mm.inverse_transform(testPredict)
-    testY = mm.inverse_transform(testY)
+    testY = mm.inverse_transform(testY.reshape(-1, n_steps_out))
 
     # calculate root mean squared error
     trainScore = math.sqrt(mean_squared_error(trainY[:, 0], trainPredict[:, 0]))
