@@ -23,10 +23,12 @@ class ImportEV:
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
         data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
 
-        if removeUsers:
-            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
+        data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
 
-        return data.reset_index(drop=True)
+        if removeUsers:
+            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
+
+        return data
 
     def getJPL(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -45,10 +47,12 @@ class ImportEV:
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
         data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
 
-        if removeUsers:
-            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
+        data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
 
-        return data.reset_index(drop=True)
+        if removeUsers:
+            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
+
+        return data
 
     def getOffice(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -67,10 +71,12 @@ class ImportEV:
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
         data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
 
-        if removeUsers:
-            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
+        data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
 
-        return data.reset_index(drop=True)
+        if removeUsers:
+            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
+
+        return data
 
     def getBoth(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """
@@ -82,7 +88,6 @@ class ImportEV:
         jpl = pd.DataFrame(json.load(open(Path('../Data/acn_jpl.json'), 'r'))['_items'])
 
         data = pd.concat([caltech, jpl], ignore_index=True)
-        data = data.sort_values(by="connectionTime").reset_index(drop=True)
 
         for i in range(len(data["doneChargingTime"])):
             if data["doneChargingTime"][i] is None:
@@ -93,10 +98,14 @@ class ImportEV:
         data["doneChargingTime"] = pd.to_datetime(data["doneChargingTime"]) - timedelta(hours=7)
         data = data[(data.connectionTime > start_date) & (data.connectionTime < end_date)]
 
-        if removeUsers:
-            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit)
+        data["chargingTime"] = pd.to_datetime(data["doneChargingTime"]) - pd.to_datetime(data["connectionTime"])
 
-        return data.reset_index(drop=True)
+        data = data.sort_values(by="connectionTime").reset_index(drop=True)
+
+        if removeUsers:
+            data = data.dropna(subset=['userID']).groupby(by="userID").filter(lambda x: len(x) > userSampleLimit).reset_index(drop=True)
+
+        return data
 
 
 class ImportWeather:
@@ -142,7 +151,7 @@ class ImportWeather:
 
 
 if __name__ == "__main__":
-    #df = ImportEV().getCaltech(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=40)
+    df = ImportEV().getBoth(start_date="2001-10-01", end_date="2022-10-04", removeUsers=True)
     #df = ImportEV().getJPL(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=10)
-    df = ImportEV().getBoth(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=1)
-    print(df.head().to_string())
+    #df = ImportEV().getBoth(start_date="2018-05-01", end_date="2018-11-01", removeUsers=True, userSampleLimit=1)
+    print(df.columns)

@@ -14,8 +14,8 @@ class createTotal:
         self.data["chargingTime"].replace(0, 1, inplace=True)
         self.data["idleTime"] = np.floor((pd.to_datetime(self.data["disconnectTime"]) - pd.to_datetime(self.data["doneChargingTime"])) / np.timedelta64(1, 'h')).astype('int')
 
-        periods = pd.to_datetime(self.end) + np.timedelta64(6, 'D') - pd.to_datetime(self.start)
-        index_values = (pd.date_range(pd.to_datetime(self.start) - pd.Timedelta(1, 'D'), periods=periods.days*24, freq='H'))
+        periods = pd.to_datetime(self.end) + np.timedelta64(10, 'D') - pd.to_datetime(self.start)
+        index_values = (pd.date_range(pd.to_datetime(self.start) - pd.Timedelta(2, 'D'), periods=periods.days*24, freq='H'))
         data_hourly = pd.DataFrame(index=index_values, columns=['total_kWhDelivered', 'carsCharging', 'carsIdle']).fillna(0)
 
         print("Counting Cars...")
@@ -40,9 +40,14 @@ class createTotal:
         data_hourly = data_hourly[(data_hourly.index >= real_start) & (data_hourly.index < self.end)]
         return data_hourly
 
+    def remove_outliers(self):
+        q1, q3 = np.quantile(self.data['chargingTime'], [0.25, 0.75])
+        self.data = self.data[self.data['chargingTime'] < q3 + 1.5 * (q3 - q1)]
+        return self
+
 
 if __name__ == '__main__':
     start, end = "2018-10-01", "2018-11-01"
     df = ImportEV().getBoth(start_date=start, end_date=end)
-    Total_df = createTotal(df, start, end).getTotalData()
+    Total_df = createTotal(df, start, end).remove_outliers().getTotalData()
     print(Total_df.to_string())

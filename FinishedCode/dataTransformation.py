@@ -15,9 +15,10 @@ class createUsers:
     def getUserData(self, user):
         #Slice the data to one user:
         user_df = self.data[self.data["userID"] == user]
-        user_df["chargingTime"] = pd.to_datetime(user_df["doneChargingTime"]) - pd.to_datetime(
-            user_df["connectionTime"])
         user_df = user_df[["connectionTime", "chargingTime", "kWhDelivered"]]
+
+        # Outlier detection on charging time
+        user_df = user_df[user_df["chargingTime"] > pd.Timedelta(0)]
 
         # Feature Information on charging days
         date_index_charging = pd.to_datetime(user_df.pop("connectionTime"))
@@ -52,9 +53,14 @@ class createUsers:
 
         return user_df.reset_index(drop=True)
 
+    def remove_outliers(self):
+        q1, q3 = np.quantile(self.data['chargingTime'], [0.25, 0.75])
+        self.data = self.data[self.data['chargingTime'] < q3 + 1.5 * (q3 - q1)]
+        return self
+
 if __name__ == "__main__":
     start, end = "2018-05-01", "2018-11-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=30)
     Users = createUsers(df, start, end)
-    User_61 = Users.getUserData(user="000000022")
+    User_61 = Users.remove_outliers().getUserData(user="000000022")
     print(User_61.to_string())
