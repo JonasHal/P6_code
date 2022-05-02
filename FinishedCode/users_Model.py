@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 from P6_code.FinishedCode.importData import ImportEV
-from P6_code.FinishedCode.dataTransformation import createUsers
+from P6_code.FinishedCode.dataTransformation import createTransformation
 from P6_code.FinishedCode.functions import split_sequences
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, GRU, ReLU
@@ -11,7 +11,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import matplotlib.pyplot as plt
 
-class Model:
+class usersModel:
 	def __init__(self):
 		#Variables to create the model
 		self.train_start = "2018-09-01"
@@ -36,7 +36,7 @@ class Model:
 
 	def create_model(self, type="LSTM"):
 		df_train = ImportEV().getBoth(start_date=self.train_start, end_date=self.train_end, removeUsers=True, userSampleLimit=self.userSampleLimit)
-		users = createUsers(df_train, self.train_start, self.train_end)
+		users = createTransformation(df_train, self.train_start, self.train_end)
 		usersID = users.data.userID.unique()
 		users_df = []
 
@@ -126,7 +126,7 @@ class Model:
 	def PredictTestSample(self, start, end, userSampleLimit):
 		#Import the data
 		df_test = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=userSampleLimit)
-		users = createUsers(df_test, start, end)
+		users = createTransformation(df_test, start, end)
 
 		#Save the user_ids for return
 		user_id = users.data.userID.unique()
@@ -193,7 +193,7 @@ class Model:
 
 if __name__ == "__main__":
 	#The model will always be first input
-	model = Model().create_model(type="LSTM")
+	model = usersModel().create_model(type="LSTM")
 	model = model.PredictTestSample("2018-12-01", "2019-01-01", 15)
 	print(model.trainScore)
 	print(model.valScore)

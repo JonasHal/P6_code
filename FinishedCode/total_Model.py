@@ -1,23 +1,22 @@
 import math
-import numpy as np
 import pandas as pd
 
 from P6_code.FinishedCode.importData import ImportEV
-from P6_code.FinishedCode.total_dataTransformation import createTotal
+from P6_code.FinishedCode.dataTransformation import createTransformation
 from P6_code.FinishedCode.functions import split_sequences
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, GRU, RepeatVector, TimeDistributed
 from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
 
-class Model:
+class totalModel:
     def __init__(self):
         # Variables to create the model
         self.data = "Caltech"
-        self.train_start = "2018-10-01"
-        self.train_end = "2018-12-01"
+        self.train_start = "2018-06-01"
+        self.train_end = "2018-11-01"
         self.val_split = 0.2
 
         # Scaler
@@ -25,9 +24,9 @@ class Model:
 
         # Model Hyperparameters (configs)
         self.model = Sequential()
-        self.n_steps_in = 25
-        self.n_steps_out = 10
-        self.n_nodes = 64
+        self.n_steps_in = 20
+        self.n_steps_out = 100
+        self.n_nodes = 20
 
         self.batch_size = 25
         self.epochs = 500
@@ -42,13 +41,14 @@ class Model:
         else:
             print("Error, data parameter should be Caltech, JPL or Office")
 
-        total = createTotal(df, self.train_start, self.train_end).getTotalData()
+        total = createTransformation(df, self.train_start, self.train_end).getTotalData()
 
         print("Making Model")
 
         # Create Input and Target Features
         X, Y = total.copy(), total.copy()
 
+        #Scale the data
         self.scaler = self.scaler.fit(X)
         X_trans = self.scaler.transform(X)
         Y_trans = self.scaler.transform(Y)
@@ -100,6 +100,9 @@ class Model:
         return self
 
     def PredictTestSample(self, start, end):
+        """
+
+        """
         start = str(pd.to_datetime(start) - pd.Timedelta(1, "D"))
 
         # Import the data
@@ -112,10 +115,7 @@ class Model:
         else:
             print("Error, data parameter should be Caltech, JPL or Office")
 
-        total = createTotal(df, start, end).getTotalData()
-
-        print("Making Model")
-        print(total)
+        total = createTransformation(df, start, end).getTotalData()
 
         # Create Input and Target Features
         X, Y = total.copy(), total.copy()
@@ -156,8 +156,8 @@ class Model:
 
 if __name__ == "__main__":
     # The model will always be first input
-    model = Model().create_model(type="LSTM")
-    model = model.PredictTestSample("2018-12-01", "2019-01-01")
+    model = totalModel().create_model(type="LSTM")
+    model = model.PredictTestSample("2018-11-01", "2018-12-01")
     print(model.trainScore)
     print(model.valScore)
     print(model.testScore)
