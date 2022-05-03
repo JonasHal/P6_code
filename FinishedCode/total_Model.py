@@ -12,11 +12,9 @@ import matplotlib.pyplot as plt
 
 
 class totalModel:
-    def __init__(self):
+    def __init__(self, data):
         # Variables to create the model
-        self.data = "Caltech"
-        self.train_start = "2018-06-01"
-        self.train_end = "2018-11-01"
+        self.totalData = data
         self.val_split = 0.2
 
         # Scaler
@@ -24,29 +22,17 @@ class totalModel:
 
         # Model Hyperparameters (configs)
         self.model = Sequential()
-        self.n_steps_in = 20
-        self.n_steps_out = 100
-        self.n_nodes = 20
+        self.n_steps_in = 10
+        self.n_steps_out = 5
+        self.n_nodes = 50
 
-        self.batch_size = 25
-        self.epochs = 500
+        self.batch_size = 50
+        self.epochs = 250
 
     def create_model(self, type="LSTM"):
-        if self.data == "Caltech":
-            df = ImportEV().getCaltech(start_date=self.train_start, end_date=self.train_end)
-        elif self.data == "JPL":
-            df = ImportEV().getJPL(start_date=self.train_start, end_date=self.train_end)
-        elif self.data == "Office":
-            df = ImportEV().getOffice(start_date=self.train_start, end_date=self.train_end)
-        else:
-            print("Error, data parameter should be Caltech, JPL or Office")
-
-        total = createTransformation(df, self.train_start, self.train_end).getTotalData()
-
         print("Making Model")
-
         # Create Input and Target Features
-        X, Y = total.copy(), total.copy()
+        X, Y = self.totalData.copy(), self.totalData.copy()
 
         #Scale the data
         self.scaler = self.scaler.fit(X)
@@ -67,6 +53,8 @@ class totalModel:
         Y_train, Y_val = total_Y[1:-train_val_cutoff + 1], total_Y[-train_val_cutoff + 1:]
 
         # Create the model
+        self.title = type
+
         if type == "LSTM":
             self.model.add(LSTM(self.n_nodes, input_shape=(self.n_steps_in, self.n_features)))
         elif type == "GRU":
@@ -74,15 +62,20 @@ class totalModel:
         else:
             raise Exception("The type of the model should either be LSTM or GRU")
 
-        self.title = type
-
         self.model.add(RepeatVector(self.n_steps_out))
-        self.model.add(LSTM(self.n_nodes, activation='relu', return_sequences=True))
+
+        if type == "LSTM":
+            self.model.add(LSTM(self.n_nodes, activation='relu', return_sequences=True))
+        elif type == "GRU":
+            self.model.add(GRU(self.n_nodes, activation='relu', return_sequences=True))
+        else:
+            raise Exception("The type of the model should either be LSTM or GRU")
+
         self.model.add(TimeDistributed(Dense(self.n_features)))
 
         # Printing the Structure of the model and compile it
         print(self.model.summary())
-        self.model.compile(optimizer='adam', loss='mse')
+        self.model.compile(optimizer='adam', loss='mse', metrics=["mean_absolute_error"])
 
         # Fit the data and trains the model
         self.history = self.model.fit(x=X_train, y=Y_train, batch_size=self.batch_size, epochs=self.epochs, verbose=1,
@@ -99,18 +92,18 @@ class totalModel:
         # Return the model and the scalers
         return self
 
-    def PredictTestSample(self, start, end):
+    def PredictTestSample(self, dataName, start, end):
         """
 
         """
         start = str(pd.to_datetime(start) - pd.Timedelta(1, "D"))
 
         # Import the data
-        if self.data == "Caltech":
+        if dataName == "Caltech":
             df = ImportEV().getCaltech(start_date=start, end_date=end)
-        elif self.data == "JPL":
+        elif dataName == "JPL":
             df = ImportEV().getJPL(start_date=start, end_date=end)
-        elif self.data == "Office":
+        elif dataName == "Office":
             df = ImportEV().getOffice(start_date=start, end_date=end)
         else:
             print("Error, data parameter should be Caltech, JPL or Office")
@@ -156,8 +149,12 @@ class totalModel:
 
 if __name__ == "__main__":
     # The model will always be first input
-    model = totalModel().create_model(type="LSTM")
-    model = model.PredictTestSample("2018-11-01", "2018-12-01")
+    start, end = "2018-05-01", "2018-11-01"
+    df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=False)
+    Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
+
+    model = totalModel(Total_df).create_model(type="GRU")
+    model = model.PredictTestSample("Caltech", "2018-11-01", "2018-12-01")
     print(model.trainScore)
     print(model.valScore)
     print(model.testScore)

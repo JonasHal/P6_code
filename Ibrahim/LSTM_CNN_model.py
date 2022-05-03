@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 from P6_code.FinishedCode.importData import ImportEV
-from P6_code.FinishedCode.dataTransformation import createUsers
+from P6_code.FinishedCode.dataTransformation import createTransformation
 from P6_code.FinishedCode.functions import split_sequences
 from keras.layers import *
 from keras.models import Sequential
@@ -12,7 +12,7 @@ from keras.layers import Flatten
 from keras.layers.convolutional import Conv1D, Conv2D
 from keras.layers.convolutional import MaxPooling1D
 
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 def df_to_X_y(df, window_size=4):
@@ -29,7 +29,7 @@ def df_to_X_y(df, window_size=4):
 if __name__ == "__main__":
     start, end = "2018-06-01", "2018-11-09"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=25)
-    Users = createUsers(df, start, end)
+    Users = createTransformation(df, start, end)
     User_61 = Users.getUserData(user="000000061")
 
     df = User_61[['chargingTime', 'kWhDelivered']]
@@ -97,8 +97,8 @@ if __name__ == "__main__":
     print(predictions[:, 0])
     print(predictions[:, 1])
 
-    print('The RMSE is ', '%e' % sqrt(mean_squared_error()))
-    print('The RMAE is ', '%e' % sqrt(
+    print('The RMSE is ', '%e' % math.sqrt(mean_squared_error()))
+    print('The RMAE is ', '%e' % math.sqrt(
         mean_absolute_error(df.loc[df.index >= df.index[int(len(df.index) * 0.8)], 'Dollar'],
                             df.loc[df.index >= df.index[int(len(df.index) * 0.8)], 'Pred'])))
     print('The MAPE is ', '%e' % mape(df.loc[df.index >= df.index[int(len(df.index) * 0.8)], 'Dollar'],

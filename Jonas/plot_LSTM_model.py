@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 from P6_code.FinishedCode.importData import ImportEV
-from P6_code.FinishedCode.dataTransformation import createUsers
+from P6_code.FinishedCode.dataTransformation import createTransformation
 from P6_code.FinishedCode.functions import split_sequences
 
 from keras.models import Sequential
@@ -14,7 +14,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 if __name__ == "__main__":
     start, end = "2018-06-01", "2018-12-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=25)
-    Users = createUsers(df, start, end)
+    Users = createTransformation(df, start, end)
     User_61 = Users.getUserData(user="000000061")
 
     ss = MinMaxScaler(feature_range=(0, 1))

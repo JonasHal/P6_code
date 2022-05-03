@@ -13,6 +13,7 @@ class ImportEV:
         :rtype:
         """
         data = pd.DataFrame(json.load(open(Path('../Data/acn_caltech.json'), 'r'))['_items'])
+        self.dataName = "Caltech"
 
         for i in range(len(data["doneChargingTime"])):
             if data["doneChargingTime"][i] is None:
@@ -37,6 +38,7 @@ class ImportEV:
         :rtype:
         """
         data = pd.DataFrame(json.load(open(Path('../Data/acn_jpl.json'), 'r'))['_items'])
+        self.dataName = "JPL"
 
         for i in range(len(data["doneChargingTime"])):
             if data["doneChargingTime"][i] is None:
@@ -61,6 +63,7 @@ class ImportEV:
         :rtype:
         """
         data = pd.DataFrame(json.load(open(Path('../Data/acn_office1.json'), 'r'))['_items'])
+        self.dataName = "Office"
 
         for i in range(len(data["doneChargingTime"])):
             if data["doneChargingTime"][i] is None:

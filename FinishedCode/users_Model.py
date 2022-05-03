@@ -85,15 +85,14 @@ class usersModel:
 
 		#Create the model
 		if type == "LSTM":
-			self.model.add(LSTM(self.n_nodes, input_shape=(self.n_steps_in, self.n_features)))
+			self.model.add(LSTM(self.n_nodes, activation='relu', input_shape=(self.n_steps_in, self.n_features)))
 		elif type == "GRU":
-			self.model.add(GRU(self.n_nodes, input_shape=(self.n_steps_in, self.n_features)))
+			self.model.add(GRU(self.n_nodes, activation='relu', input_shape=(self.n_steps_in, self.n_features)))
 		else:
 			raise Exception("The type of the model should either be LSTM or GRU")
 
 		self.title = type
 
-		self.model.add(ReLU())
 		self.model.add(Dense(self.n_steps_out))
 
 		# Printing the Structure of the model and compile it
