@@ -37,8 +37,8 @@ if __name__ == "__main__":
     trainY, testY = y_mm[1:-train_test_cutoff + 1], y_mm[-train_test_cutoff + 1:]
 
     model = Sequential()
-    model.add(LSTM(5, return_sequences=True, input_shape=(n_steps_in, n_features)))
-    model.add(LSTM(5))
+    model.add(LSTM(5, activation='relu', return_sequences=True, input_shape=(n_steps_in, n_features)))
+    model.add(LSTM(5, activation='relu'))
     model.add(ReLU())
     model.add(Dense(n_steps_out))
     model.compile(loss='mean_squared_error', optimizer='adam')

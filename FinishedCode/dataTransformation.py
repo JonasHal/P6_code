@@ -111,9 +111,10 @@ class createTransformation:
 if __name__ == "__main__":
     start, end = "2018-05-01", "2018-11-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=False)
-    Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
-    print(Total_df.to_string())
 
-    #Users = createTransformation(df, start, end)
-    #User_61 = Users.remove_outliers().getUserData(user="000000022")
-    #print(User_61.to_string())
+    #Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
+    #print(Total_df.to_string())
+
+    Users = createTransformation(df, start, end)
+    User_61 = Users.remove_outliers().getUserData(user="000000022")
+    print(Users.data.userID)

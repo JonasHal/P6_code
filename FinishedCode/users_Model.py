@@ -1,47 +1,41 @@
 import math
 import numpy as np
-import pandas as pd
-
 from P6_code.FinishedCode.importData import ImportEV
 from P6_code.FinishedCode.dataTransformation import createTransformation
-from P6_code.FinishedCode.functions import split_sequences
-from keras.models import Sequential
-from keras.layers import Dense, LSTM, GRU, ReLU
+from P6_code.FinishedCode.functions import split_sequences, getModelStructure
 from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
 class usersModel:
-	def __init__(self):
-		#Variables to create the model
-		self.train_start = "2018-09-01"
-		self.train_end = "2018-12-01"
-		self.userSampleLimit = 30
+	def __init__(self, data):
+		# Variables and defining loss evaluation to create the model
+		self.usersData = data
 		self.val_split = 0.2
 		self.target_feature = "kWhDelivered"
 		self.drop_feature = 'chargingTime'
+		self.lossType = "mean_squared_error"
 
 		#Scalers
-		self.ss = MinMaxScaler(feature_range=(0, 1))
-		self.mm = MinMaxScaler(feature_range=(0, 1))
+		self.mmX = MinMaxScaler(feature_range=(0, 1))
+		self.mmy = MinMaxScaler(feature_range=(0, 1))
 
 		#Model Hyperparameters (configs)
-		self.model = Sequential()
-		self.n_steps_in = 4
-		self.n_steps_out = 1
-		self.n_nodes = 3
+		self.n_steps_in = 5
+		self.n_steps_out = 2
+		self.n_nodes = 30
+		self.n_nodes_cnn = 64
 
 		self.batch_size = 25
 		self.epochs = 200
 
-	def create_model(self, type="LSTM"):
-		df_train = ImportEV().getBoth(start_date=self.train_start, end_date=self.train_end, removeUsers=True, userSampleLimit=self.userSampleLimit)
-		users = createTransformation(df_train, self.train_start, self.train_end)
-		usersID = users.data.userID.unique()
+	def createModel(self, type="LSTM"):
+		# Find all the unique userID
+		usersID = self.usersData.data.userID.unique()
 		users_df = []
 
 		for user in usersID:
-			users_df.append(users.getUserData(user=user))
+			users_df.append(self.usersData.getUserData(user=user))
 
 		#Create Input and Target Features
 		X, Y = [], []
@@ -59,13 +53,13 @@ class usersModel:
 		Y_scaled = []
 
 		for user in X:
-			self.ss.fit(user)
+			self.mmX.fit(user)
 		for user in X:
-			X_scaled.append(self.ss.transform(user))
+			X_scaled.append(self.mmX.transform(user))
 		for user in Y:
-			self.mm.fit(user.values.reshape(-1, 1))
+			self.mmy.fit(user.values.reshape(-1, 1))
 		for user in Y:
-			Y_scaled.append(self.mm.transform(user.values.reshape(-1, 1)))
+			Y_scaled.append(self.mmy.transform(user.values.reshape(-1, 1)))
 
 		#Split the data into training and validation data
 		total_samples = len(X[0])
@@ -83,21 +77,14 @@ class usersModel:
 			Y_train.append(user_Y[1:-train_val_cutoff + 1])
 			Y_val.append(user_Y[-train_val_cutoff + 1:])
 
-		#Create the model
-		if type == "LSTM":
-			self.model.add(LSTM(self.n_nodes, activation='relu', input_shape=(self.n_steps_in, self.n_features)))
-		elif type == "GRU":
-			self.model.add(GRU(self.n_nodes, activation='relu', input_shape=(self.n_steps_in, self.n_features)))
-		else:
-			raise Exception("The type of the model should either be LSTM or GRU")
-
+		# Create the model
+		print(self.n_features)
 		self.title = type
-
-		self.model.add(Dense(self.n_steps_out))
+		self.model = getModelStructure(type, self.n_steps_in, self.n_steps_out, self.n_features, self.n_nodes, self.n_nodes_cnn)
 
 		# Printing the Structure of the model and compile it
 		print(self.model.summary())
-		self.model.compile(optimizer='adam', loss='mse', metrics=["mean_absolute_error"])
+		self.model.compile(loss=self.lossType, optimizer='adam')
 
 		#Fit the data and trains the model
 		progress = 0
@@ -112,8 +99,8 @@ class usersModel:
 		self.trainScore, self.valScore = [], []
 
 		for i in range(len(X_train)):
-			train_predict.append(self.mm.inverse_transform(self.model.predict(X_train[i]).reshape(-1, self.n_steps_out)))
-			val_predict.append(self.mm.inverse_transform(self.model.predict(X_val[i]).reshape(-1, self.n_steps_out)))
+			train_predict.append(self.mmy.inverse_transform(self.model.predict(X_train[i]).reshape(-1, self.n_steps_out)))
+			val_predict.append(self.mmy.inverse_transform(self.model.predict(X_val[i]).reshape(-1, self.n_steps_out)))
 
 			# calculate root mean squared error
 			self.trainScore.append(math.sqrt(mean_squared_error(Y_train[i][:, 0], train_predict[i][:, 0])))
@@ -122,10 +109,20 @@ class usersModel:
 		#Return the model and the scalers
 		return self
 
-	def PredictTestSample(self, start, end, userSampleLimit):
-		#Import the data
-		df_test = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=userSampleLimit)
-		users = createTransformation(df_test, start, end)
+	def PredictTestSample(self, dataName, start, end, userSampleLimit):
+		# Import the data
+		if dataName == "Caltech":
+			df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=userSampleLimit)
+		elif dataName == "JPL":
+			df = ImportEV().getJPL(start_date=start, end_date=end, removeUsers=True, userSampleLimit=userSampleLimit)
+		elif dataName == "Office":
+			df = ImportEV().getOffice(start_date=start, end_date=end, removeUsers=True, userSampleLimit=userSampleLimit)
+		elif dataName == "Both":
+			df = ImportEV().getBoth(start_date=start, end_date=end, removeUsers=True, userSampleLimit=userSampleLimit)
+		else:
+			print("Error, data parameter should be Caltech, JPL, Both or Office")
+
+		users = createTransformation(df, start, end)
 
 		#Save the user_ids for return
 		user_id = users.data.userID.unique()
@@ -145,7 +142,7 @@ class usersModel:
 		X_test_scaled = []
 
 		for user in X_test:
-			X_test_scaled.append(self.ss.transform(user))
+			X_test_scaled.append(self.mmX.transform(user))
 
 		#Split the data for prediction in the RNN models
 		users_test_X, self.users_test_Y = [], []
@@ -161,7 +158,7 @@ class usersModel:
 
 		# Make and Invert predictions
 		for user in range(len(users_test_X)):
-			self.test_predict.append(self.mm.inverse_transform(self.model.predict(users_test_X[user]).reshape(-1, self.n_steps_out)))
+			self.test_predict.append(self.mmy.inverse_transform(self.model.predict(users_test_X[user]).reshape(-1, self.n_steps_out)))
 
 			# calculate root mean squared error
 			self.testScore.append(math.sqrt(mean_squared_error(self.users_test_Y[user][:, 0], self.test_predict[user][:, 0])))
@@ -170,6 +167,7 @@ class usersModel:
 
 	def PlotTestSample(self, user=0):
 		# plot baseline and predictions
+		plt.title(self.title)
 		plt.plot(self.users_test_Y[user][:, 0])
 		plt.plot(self.test_predict[user][:, 0])
 		plt.show()
@@ -191,12 +189,12 @@ class usersModel:
 
 
 if __name__ == "__main__":
-	#The model will always be first input
-	model = usersModel().create_model(type="LSTM")
-	model = model.PredictTestSample("2018-12-01", "2019-01-01", 15)
-	print(model.trainScore)
-	print(model.valScore)
-	print(model.testScore)
+	start, end = "2018-09-01", "2018-12-01"
+	df = ImportEV().getBoth(start_date=start, end_date=end, removeUsers=True, userSampleLimit=30)
+	Users = createTransformation(df, start, end)
+
+	model = usersModel(Users).createModel(type="LSTM-CNN")
+	model = model.PredictTestSample("Both", "2018-12-01", "2019-01-01", 15)
 
 	model.PlotLoss()
 
