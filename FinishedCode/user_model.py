@@ -21,8 +21,8 @@ class userModel:
         self.mmy = MinMaxScaler(feature_range=(0, 1))
 
         # Model Hyperparameters (configs)
-        self.n_steps_in = 5
-        self.n_steps_out = 2
+        self.n_steps_in = 20
+        self.n_steps_out = 5
         self.n_nodes = 100
         self.n_nodes_cnn = 64
 
@@ -31,7 +31,7 @@ class userModel:
 
     def createModel(self, type="LSTM"):
         # Scale the Data
-        X, y = self.userData.drop(columns="chargingTime"), self.userData["kWhDelivered"]
+        X, y = self.userData.drop(columns=self.drop_feature), self.userData[self.target_feature]
         print("The input features are: " + str(X.columns))
 
         X_trans = self.mmX.fit_transform(X)
