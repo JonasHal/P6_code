@@ -202,7 +202,7 @@ if __name__ == "__main__":
     model = model.PredictTestSample("Caltech", "2019-01-01", "2019-01-15")
     print(model.trainRMSE_Score)
     print(model.valRMSE_Score)
-    print(model.testRMSEScore)
+    print(model.testRMSE_Score)
 
     model.PlotLoss()
 
