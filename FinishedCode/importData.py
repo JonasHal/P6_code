@@ -4,7 +4,6 @@ import numpy as np
 import json
 from datetime import timedelta
 
-
 class ImportEV:
     def getCaltech(self, start_date, end_date, removeUsers = False, userSampleLimit = 50):
         """

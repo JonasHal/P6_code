@@ -8,6 +8,11 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
 class usersModel:
+	"""A Model class used to predict one given feature from the total dataframe.
+	@param data: The data to create the model from. Has to be from:
+    createTransformation(*params)
+	@return: The model object, call createModel() to fit it.
+	"""
 	def __init__(self, data):
 		# Variables and defining loss evaluation to create the model
 		self.usersData = data
@@ -30,6 +35,12 @@ class usersModel:
 		self.epochs = 200
 
 	def createModel(self, type="LSTM"):
+		"""Creates the model with the given type and fits the data.
+		@param type: The type of model that should be created. Can be the following:
+		LSTM, GRU, CNN or LSTM-CNN
+
+		@return: The model object, with a fitted model, which can be used for prediction.
+		"""
 		# Find all the unique userID
 		usersID = self.usersData.data.userID.unique()
 		users_df = []
@@ -72,10 +83,10 @@ class usersModel:
 			user_X, user_Y = split_sequences(X_scaled[user], Y_scaled[user], self.n_steps_in, self.n_steps_out)
 
 			X_train.append(user_X[:-train_val_cutoff])
-			X_val.append(user_X[-train_val_cutoff:-1])
+			X_val.append(user_X[-train_val_cutoff:])
 
-			Y_train.append(user_Y[1:-train_val_cutoff + 1])
-			Y_val.append(user_Y[-train_val_cutoff + 1:])
+			Y_train.append(user_Y[:-train_val_cutoff])
+			Y_val.append(user_Y[-train_val_cutoff:])
 
 		# Create the model
 		print(self.n_features)
@@ -110,6 +121,15 @@ class usersModel:
 		return self
 
 	def PredictTestSample(self, dataName, start, end, userSampleLimit):
+		"""Note: Should be run after creating the model
+		Predicts a given timeframe from a given dataset.
+		@param dataName: The dataset, where the prediction should take place
+		@param start: The start date of the prediction
+		@param end: The end date of the prediction
+		@param userSampleLimit: Lower bound for the least amount of charges a user has made.
+
+		@return: The model object, with the prediction results.
+		"""
 		# Import the data
 		if dataName == "Caltech":
 			df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=userSampleLimit)
@@ -166,6 +186,10 @@ class usersModel:
 		return self
 
 	def PlotTestSample(self, user=0):
+		"""Note: Should be run after making a test prediction
+		Makes a graph with the predictions and real values on the test data.
+		@param user: The index of the user to draw the plot from.
+		"""
 		# plot baseline and predictions
 		plt.title(self.title)
 		plt.plot(self.users_test_Y[user][:, 0])
@@ -173,6 +197,9 @@ class usersModel:
 		plt.show()
 
 	def PlotLoss(self):
+		"""Note: Should be run after creating the model
+        Makes a graph with the loss from each epoch when fitting the model.
+        """
 		loss = [x.history["loss"] for x in self.history]
 		val_loss = [x.history["val_loss"] for x in self.history]
 

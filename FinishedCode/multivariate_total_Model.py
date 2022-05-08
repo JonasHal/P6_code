@@ -11,7 +11,12 @@ from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
 
-class totalModel:
+class mtotalModel:
+    """A Model class used to predict multivariate data from the total dataframe.
+    @param data: The data to create the model from. Has to be from:
+    createTransformation(*params).getTotalData()
+    @return: The model object, call createModel() to fit it.
+    """
     def __init__(self, data):
         # Variables to create the model
         self.totalData = data
@@ -29,7 +34,13 @@ class totalModel:
         self.batch_size = 50
         self.epochs = 250
 
-    def create_model(self, type="LSTM"):
+    def createModel(self, type="LSTM"):
+        """Creates the model with the given type and fits the data.
+        @param type: The type of model that should be created. Can be the following:
+        LSTM, GRU, CNN or LSTM-CNN
+
+        @return: The model object, with a fitted model, which can be used for prediction.
+        """
         print("Making Model")
         # Create Input and Target Features
         X, Y = self.totalData.copy(), self.totalData.copy()
@@ -49,8 +60,8 @@ class totalModel:
 
         total_X, total_Y = split_sequences(X_trans, Y_trans, self.n_steps_in, self.n_steps_out)
 
-        X_train, X_val = total_X[:-train_val_cutoff], total_X[-train_val_cutoff:-1]
-        Y_train, Y_val = total_Y[1:-train_val_cutoff + 1], total_Y[-train_val_cutoff + 1:]
+        X_train, X_val = total_X[:-train_val_cutoff], total_X[-train_val_cutoff:]
+        Y_train, Y_val = total_Y[:-train_val_cutoff], total_Y[-train_val_cutoff:]
 
         # Create the model
         self.title = type
@@ -93,8 +104,13 @@ class totalModel:
         return self
 
     def PredictTestSample(self, dataName, start, end):
-        """
+        """Note: Should be run after creating the model
+        Predicts a given timeframe from a given dataset.
+        @param dataName: The dataset, where the prediction should take place
+        @param start: The start date of the prediction
+        @param end: The end date of the prediction
 
+        @return: The model object, with the prediction results.
         """
         start = str(pd.to_datetime(start) - pd.Timedelta(1, "D"))
 
@@ -105,8 +121,10 @@ class totalModel:
             df = ImportEV().getJPL(start_date=start, end_date=end)
         elif dataName == "Office":
             df = ImportEV().getOffice(start_date=start, end_date=end)
+        elif dataName == "Both":
+            df = ImportEV().getBoth(start_date=start, end_date=end)
         else:
-            print("Error, data parameter should be Caltech, JPL or Office")
+            raise Exception("Error, data parameter should be Caltech, JPL, Both or Office")
 
         total = createTransformation(df, start, end).getTotalData()
 
@@ -130,12 +148,23 @@ class totalModel:
         return self
 
     def PlotTestSample(self, column_to_predict=0):
+        """Note: Should be run after making a test prediction
+        Makes a graph with the predictions and real values on the test data.
+        After specifying the index of which column to predict
+        @param column_to_predict: The index of the feature to plot
+        0 is "kWhDelivered"
+        1 is "carsCharging"
+        2 is "carsIdle"
+        """
         # plot baseline and predictions
         plt.plot(self.Y_test[:, column_to_predict])
         plt.plot(self.test_predict[:, column_to_predict])
         plt.show()
 
     def PlotLoss(self):
+        """Note: Should be run after creating the model
+        Makes a graph with the loss from each epoch when fitting the model.
+        """
         loss = self.history.history["loss"]
         val_loss = self.history.history["val_loss"]
 
@@ -153,7 +182,7 @@ if __name__ == "__main__":
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=False)
     Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
 
-    model = totalModel(Total_df).create_model(type="GRU")
+    model = mtotalModel(Total_df).createModel(type="GRU")
     model = model.PredictTestSample("Caltech", "2018-11-01", "2018-12-01")
     print(model.trainScore)
     print(model.valScore)

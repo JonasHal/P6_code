@@ -102,7 +102,13 @@ class createTransformation:
 
         real_start = pd.to_datetime(self.start) + np.timedelta64(1, 'D')
 
-        #data_hourly.loc[:, ("Weekday")] = data_hourly.index.day_of_week
+        # Holiday Handling
+        cal = calendar()
+        holidays = cal.holidays(start=self.start, end=self.end)
+
+        # Input Features on specific days
+        data_hourly.loc[:, 'Holiday'] = data_hourly.index.isin(holidays)
+        data_hourly.loc[:, ("Weekday")] = data_hourly.index.day_of_week
 
         #Remove eccess data
         data_hourly = data_hourly[(data_hourly.index >= real_start) & (data_hourly.index < self.end)]
