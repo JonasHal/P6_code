@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from P6_code.FinishedCode.importData import ImportEV
-from P6_code.FinishedCode.dataTransformation import createUsers
+from P6_code.FinishedCode.dataTransformation import createTransformation
 import math
 
 from keras.models import Sequential
@@ -25,7 +25,7 @@ def df_to_X_y(df, window_size=7):
 if __name__ == "__main__":
     start, end = "2018-06-01", "2018-11-09"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=25)
-    Users = createUsers(df, start, end)
+    Users = createTransformation(df, start, end)
     User_61 = Users.getUserData(user="000000061")
 
 
