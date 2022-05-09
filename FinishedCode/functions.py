@@ -21,9 +21,10 @@ def split_sequences(input_sequences, output_sequence, n_steps_in, n_steps_out):
         X.append(seq_x), y.append(seq_y)
     return np.array(X), np.array(y)
 
-def getModelStructure(type, n_steps_in, n_steps_out, n_features, n_nodes, n_nodes_cnn):
+def getModelStructure(type, layers, n_steps_in, n_steps_out, n_features, n_nodes, n_nodes_cnn):
     """Creates the structure of a model with the given hyperparameters. Kept simple
     @param type: Should be a string: either "LSTM", "GRU", "CNN" or "LSTM-CNN"
+    @param layers: How many layers the Neural Network consist of. Should be 1 or 2
     @param n_steps_in: Number of rows in the input
     @param n_steps_out: Number of rows in the output
     @param n_features: Number of columns in the input
@@ -32,20 +33,48 @@ def getModelStructure(type, n_steps_in, n_steps_out, n_features, n_nodes, n_node
 
     @return: A model structure with the given hyperparameters
     """
-    if type == "LSTM":
+    if type == "LSTM" and layers == 1:
         model = Sequential([
+            # LSTM(n_nodes, activation='relu', return_sequences=True, input_shape=(n_steps_in, n_features)),
             LSTM(n_nodes, activation='relu', input_shape=(n_steps_in, n_features)),
             Dense(n_steps_out, activation='relu'),
         ])
-    elif type == "GRU":
+    elif type == "LSTM" and layers == 2:
         model = Sequential([
+            LSTM(n_nodes, activation='relu', return_sequences=True, input_shape=(n_steps_in, n_features)),
+            LSTM(n_nodes, activation='relu', input_shape=(n_steps_in, n_features)),
+            Dense(n_steps_out, activation='relu'),
+        ])
+
+
+    elif type == "GRU" and layers == 1:
+        model = Sequential([
+        GRU(n_nodes, activation='relu', input_shape=(n_steps_in, n_features)),
+        Dense(n_steps_out, activation='relu')
+        ])
+
+    elif type == "GRU" and layers == 2:
+        model = Sequential([
+            GRU(n_nodes, activation='relu', return_sequences=True, input_shape=(n_steps_in, n_features)),
             GRU(n_nodes, activation='relu', input_shape=(n_steps_in, n_features)),
             Dense(n_steps_out, activation='relu'),
         ])
-    elif type == "CNN":
+    elif type == "CNN" and layers == 1:
         model = Sequential([
             Conv1D(n_nodes_cnn, kernel_size=n_features, activation='relu', input_shape=(n_steps_in, n_features)),
             MaxPooling1D(pool_size=n_features),
+            Dropout(0.2),
+            Flatten(),
+            Dense(n_steps_out, activation='relu')
+        ])
+
+    elif type == "CNN" and layers == 2:
+        model = Sequential([
+            Conv1D(n_nodes_cnn, kernel_size=1, activation='relu', input_shape=(n_steps_in, n_features)),
+            MaxPooling1D(pool_size=1),
+            Dropout(0.2),
+            Conv1D(n_nodes_cnn, kernel_size=1, activation='relu', input_shape=(n_steps_in, n_features,)),
+            MaxPooling1D(pool_size=1),
             Dropout(0.2),
             Flatten(),
             Dense(n_steps_out, activation='relu')
