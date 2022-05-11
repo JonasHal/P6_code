@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import pandas as pd
 from P6_code.FinishedCode.importData import ImportEV
 from P6_code.FinishedCode.dataTransformation import createTransformation
 from P6_code.FinishedCode.functions import split_sequences, getModelStructure
@@ -13,7 +14,7 @@ class usersModel:
     createTransformation(*params)
 	@return: The model object, call createModel() to fit it.
 	"""
-	def __init__(self, data):
+	def __init__(self, data, n_steps_in, n_nodes):
 		# Variables and defining loss evaluation to create the model
 		self.usersData = data
 		self.val_split = 0.2
@@ -21,20 +22,21 @@ class usersModel:
 		self.drop_feature = 'chargingTime'
 		self.lossType = "mean_squared_error"
 
+
 		#Scalers
 		self.mmX = MinMaxScaler(feature_range=(0, 1))
 		self.mmy = MinMaxScaler(feature_range=(0, 1))
 
 		#Model Hyperparameters (configs)
-		self.n_steps_in = 5
+		self.n_steps_in = n_steps_in
 		self.n_steps_out = 2
-		self.n_nodes = 30
-		self.n_nodes_cnn = 64
+		self.n_nodes = n_nodes
+		self.n_nodes_cnn = n_nodes
 
 		self.batch_size = 25
 		self.epochs = 200
 
-	def createModel(self, type="LSTM"):
+	def createModel(self, type="LSTM", layers=1):
 		"""Creates the model with the given type and fits the data.
 		@param type: The type of model that should be created. Can be the following:
 		LSTM, GRU, CNN or LSTM-CNN
@@ -90,8 +92,8 @@ class usersModel:
 
 		# Create the model
 		print(self.n_features)
-		self.title = type
-		self.model = getModelStructure(type, self.n_steps_in, self.n_steps_out, self.n_features, self.n_nodes, self.n_nodes_cnn)
+		self.title = '{type} layer:{layers}, n_nodes:{nodes} n_steps{steps_in}'.format(type=type, layers=layers, nodes=n_nodes, steps_in=n_steps_in)
+		self.model = getModelStructure(type, layers, self.n_steps_in, self.n_steps_out, self.n_features, self.n_nodes, self.n_nodes_cnn)
 
 		# Printing the Structure of the model and compile it
 		print(self.model.summary())
@@ -216,14 +218,21 @@ class usersModel:
 
 
 if __name__ == "__main__":
-	start, end = "2018-09-01", "2018-12-01"
+	start, end = "2018-08-01", "2018-12-01"
 	df = ImportEV().getBoth(start_date=start, end_date=end, removeUsers=True, userSampleLimit=30)
 	Users = createTransformation(df, start, end)
 
-	model = usersModel(Users).createModel(type="LSTM-CNN")
-	model = model.PredictTestSample("Both", "2018-12-01", "2019-01-01", 15)
 
-	model.PlotLoss()
+	grid_df = pd.DataFrame(columns=['model type', 'n_steps_in', 'n_nodes', 'train', 'val'])
 
-	model.PlotTestSample(user=3)
+	for model_type in ["LSTM", "GRU", 'CNN']:
+		for n_steps_in in [3, 15, 50]:
+			for n_nodes in [5, 50, 64]:
+				for layers in [1, 2]:
+					model = usersModel(Users, n_steps_in, n_nodes).createModel(type=model_type)
+					grid_df = grid_df.append({'model type': model_type, 'n_steps_in': n_steps_in, 'n_nodes': n_nodes,'train': model.trainScore, 'val': model.valScore }, ignore_index=True)
+					model.PlotLoss()
+					print({'model type': model_type, 'n_steps_in': n_steps_in, 'n_nodes': n_nodes,'train': model.trainScore, 'val': model.valScore})
 
+	print(grid_df.to_string())
+	grid_df.to_csv('grid_df.csv')
