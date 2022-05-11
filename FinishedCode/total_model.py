@@ -30,15 +30,15 @@ class totalModel:
 
         # Model Hyperparameters (configs)
         self.model = Sequential()
-        self.n_steps_in = 3
-        self.n_steps_out = 3
+        self.n_steps_in = 20
+        self.n_steps_out = 5
         self.n_nodes = 50
         self.n_nodes_cnn = 64
 
         self.batch_size = 50
         self.epochs = 250
 
-    def createModel(self, type="LSTM"):
+    def createModel(self, type="LSTM", layers):
         """Creates the model with the given type and fits the data.
         @param type: The type of model that should be created. Can be the following:
         LSTM, GRU, CNN or LSTM-CNN
@@ -69,8 +69,8 @@ class totalModel:
         y_train, y_val = total_y[:-train_val_cutoff], total_y[-train_val_cutoff:]
 
         # Create the model
-        self.title = type
-        self.model = getModelStructure(type, self.n_steps_in, self.n_steps_out, self.n_features, self.n_nodes, self.n_nodes_cnn)
+        self.title = type, layers
+        self.model = getModelStructure(type, layers, self.n_steps_in, self.n_steps_out, self.n_features, self.n_nodes, self.n_nodes_cnn)
 
         # Printing the Structure of the model and compile it
         print(self.model.summary())
@@ -194,18 +194,18 @@ class totalModel:
 
 if __name__ == "__main__":
     # The model will always be first input
-    start, end = "2018-10-20", "2018-11-01"
+    start, end = "2018-10-01", "2018-11-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=False)
     Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
 
-    model = totalModel(Total_df).createModel(type="LSTM-CNN")
-    model = model.PredictTestSample("Caltech", "2019-01-01", "2019-01-15")
+    model = totalModel(Total_df, feature_name="carsIdle").createModel(type="LSTM", layers=2)
+    #model = model.PredictTestSample("Caltech", "2019-01-01", "2019-01-15")
     print(model.trainRMSE_Score)
     print(model.valRMSE_Score)
-    print(model.testRMSE_Score)
+    #print(model.testRMSE_Score)
 
     model.PlotLoss()
 
-    model.PlotTestSample()
+    #model.PlotTestSample()
 
     model.PlotTrainVal()

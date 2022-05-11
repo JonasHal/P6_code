@@ -26,15 +26,15 @@ class userModel:
         self.mmy = MinMaxScaler(feature_range=(0, 1))
 
         # Model Hyperparameters (configs)
-        self.n_steps_in = 5
+        self.n_steps_in = 3
         self.n_steps_out = 2
-        self.n_nodes = 10
-        self.n_nodes_cnn = 64
+        self.n_nodes = 20
+        self.n_nodes_cnn = 128
 
         self.batch_size = 25
         self.epochs = 250
 
-    def createModel(self, type="LSTM"):
+    def createModel(self, type="LSTM", layers=1):
         """Creates the model with the given type and fits the data.
         @param type: The type of model that should be created. Can be the following:
         LSTM, GRU, CNN or LSTM-CNN
@@ -61,8 +61,8 @@ class userModel:
         y_train, y_val = y_scaled[:-train_val_cutoff], y_scaled[-train_val_cutoff:]
 
         # Create the model
-        self.title = type
-        self.model = getModelStructure(type, self.n_steps_in, self.n_steps_out, self.n_features, self.n_nodes, self.n_nodes_cnn)
+        self.title = type, layers
+        self.model = getModelStructure(type, layers, self.n_steps_in, self.n_steps_out, self.n_features, self.n_nodes, self.n_nodes_cnn)
 
         # Printing the Structure of the model and compile it
         print(self.model.summary())
@@ -130,12 +130,13 @@ class userModel:
 
 
 if __name__ == "__main__":
-    start, end = "2018-09-15", "2018-11-01"
+    start, end = "2018-09-01", "2018-11-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=25)
     Users = createTransformation(df, start, end)
     User_61 = Users.getUserData(user="000000061")
 
-    LSTM = userModel(User_61).createModel()
+    LSTM_CNN = userModel(User_61).createModel("LSTM", layers=2)
 
-    LSTM.PlotTrainVal()
-    LSTM.PlotLoss()
+    LSTM_CNN.PlotLoss()
+
+    LSTM_CNN.PlotTrainVal()
