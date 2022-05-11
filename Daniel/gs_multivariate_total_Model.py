@@ -194,7 +194,7 @@ if __name__ == "__main__":
 
     for model_type in ["LSTM", "GRU"]:
         for n_steps_in in [3, 15, 50]:
-            for n_nodes in [25, 50, 75]:
+            for n_nodes in [5, 50, 100]:
                 model = mtotalModel(Total_df, n_steps_in, n_nodes).createModel(type=model_type)
 
                 grid_df = grid_df.append({'model type': model_type, 'n_steps_in': n_steps_in, 'n_nodes': n_nodes,
