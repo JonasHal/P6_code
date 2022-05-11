@@ -174,19 +174,17 @@ class mtotalModel:
         plt.clf()
         plt.plot(loss, label="train_loss")
         plt.plot(val_loss, label="val_loss")
-        plt.title(self.title + ', n_in: ' + str(self.n_steps_in) + ', n_out:' + str(self.n_steps_out) +
-                  ', n_nodes: ' + str(self.n_nodes) + ', batch_size: ' + str(self.batch_size) + ', epochs: ' + str(self.epochs))
+        plt.title(self.title + ', n_in: ' + str(self.n_steps_in) + ', n_nodes: ' + str(self.n_nodes))
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.legend()
-        plt.savefig('mvtm_2/' + self.title + '_n_steps_in' + str(self.n_steps_in) + '_n_steps_out' + str(self.n_steps_out)
-                    + '_n_nodes' + str(self.n_nodes) + '_batch_size' + str(self.batch_size) + '_epochs' + str(self.epochs))
+        plt.savefig('mvtm_2/' + self.title + '_n_steps_in' + str(self.n_steps_in) + '_n_nodes' + str(self.n_nodes))
         #plt.show()
 
 
 if __name__ == "__main__":
     # The model will always be first input
-    start, end = "2018-05-01", "2018-11-01"
+    start, end = "2018-08-01", "2018-11-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=False)
     Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
 
