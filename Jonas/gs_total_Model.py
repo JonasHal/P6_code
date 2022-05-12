@@ -205,7 +205,7 @@ if __name__ == "__main__":
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=False)
     Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
 
-    grid_df = pd.DataFrame(columns=['model type', "target_feature", 'n_steps_in', 'n_nodes', "n_nodes_cnn", "layers", 'train', 'val'])
+    grid_df = pd.DataFrame(columns=['model type', "target_feature", 'n_steps_in', 'n_nodes', "n_nodes_cnn", "layers", 'val_RMSE', 'val_MAE'])
 
     for model_type in ["LSTM"]:
         for feature_name in ["total_kWhDelivered", "carsCharging", "carsIdle"]:
@@ -220,13 +220,12 @@ if __name__ == "__main__":
                             grid_df = grid_df.append({'model type': model_type, "target_feature": feature_name,
                                                       'n_steps_in': n_steps_in, 'n_nodes': n_nodes,
                                                       "n_nodes_cnn": n_nodes_cnn,
-                                                      "layers": layers, 'train': model.trainRMSE_Score,
-                                                      'val': model.valRMSE_Score
+                                                      "layers": layers, 'val_RMSE': model.valRMSE_Score, 'val_MAE': model.valMAE_Score
                                                       }, ignore_index=True)
                             model.PlotLoss()
                             print({'model type': model_type, "target_feature": feature_name,
                                    'n_steps_in': n_steps_in, 'n_nodes': n_nodes, "n_nodes_cnn": n_nodes_cnn,
-                                   "layers": layers, 'train': model.trainRMSE_Score, 'val': model.valRMSE_Score
+                                   "layers": layers, 'val_RMSE': model.valRMSE_Score, 'val_MAE': model.valMAE_Score
                                    })
 
                     else:
@@ -239,13 +238,12 @@ if __name__ == "__main__":
                                 grid_df = grid_df.append({'model type': model_type, "target_feature": feature_name,
                                                           'n_steps_in': n_steps_in, 'n_nodes': n_nodes,
                                                           "n_nodes_cnn": n_nodes_cnn,
-                                                          "layers": layers, 'train': model.trainRMSE_Score,
-                                                          'val': model.valRMSE_Score
+                                                          "layers": layers, 'val_RMSE': model.valRMSE_Score, 'val_MAE': model.valMAE_Score
                                                           }, ignore_index=True)
                                 model.PlotLoss()
                                 print({'model type': model_type, "target_feature": feature_name,
                                        'n_steps_in': n_steps_in, 'n_nodes': n_nodes, "n_nodes_cnn": n_nodes_cnn,
-                                       "layers": layers, 'train': model.trainRMSE_Score, 'val': model.valRMSE_Score
+                                       "layers": layers, 'val_RMSE': model.valRMSE_Score, 'val_MAE': model.valMAE_Score
                                        })
                             else:
                                 for layers in [1, 2]:
@@ -253,12 +251,12 @@ if __name__ == "__main__":
 
                                     grid_df = grid_df.append({'model type': model_type, "target_feature": feature_name,
                                                               'n_steps_in': n_steps_in, 'n_nodes': n_nodes, "n_nodes_cnn": n_nodes_cnn,
-                                                              "layers": layers, 'train': model.trainRMSE_Score, 'val': model.valRMSE_Score
+                                                              "layers": layers, 'val_RMSE': model.valRMSE_Score, 'val_MAE': model.valMAE_Score
                                                               }, ignore_index=True)
                                     model.PlotLoss()
                                     print({'model type': model_type, "target_feature": feature_name,
                                            'n_steps_in': n_steps_in, 'n_nodes': n_nodes, "n_nodes_cnn": n_nodes_cnn,
-                                           "layers": layers, 'train': model.trainRMSE_Score, 'val': model.valRMSE_Score
+                                           "layers": layers, 'val_RMSE': model.valRMSE_Score, 'val_MAE': model.valMAE_Score
                                            })
 
     print(grid_df.to_string())
