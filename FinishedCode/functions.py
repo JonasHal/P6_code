@@ -64,8 +64,8 @@ def getModelStructure(type, layers, n_steps_in, n_steps_out, n_features, n_nodes
         ])
     elif type == "CNN" and layers == 1:
         model = Sequential([
-            Conv1D(n_nodes_cnn, kernel_size=n_features, activation='relu', input_shape=(n_steps_in, n_features)),
-            MaxPooling1D(pool_size=n_features),
+            Conv1D(n_nodes_cnn, kernel_size=2, activation='relu', input_shape=(n_steps_in, n_features)),
+            MaxPooling1D(pool_size=2),
             Dropout(0.2),
             Flatten(),
             Dense(n_steps_out, activation='relu')
@@ -73,11 +73,11 @@ def getModelStructure(type, layers, n_steps_in, n_steps_out, n_features, n_nodes
 
     elif type == "CNN" and layers == 2:
         model = Sequential([
-            Conv1D(n_nodes_cnn, kernel_size=1, activation='relu', input_shape=(n_steps_in, n_features)),
-            MaxPooling1D(pool_size=1),
+            Conv1D(n_nodes_cnn, kernel_size=2, activation='relu', input_shape=(n_steps_in, n_features)),
+            MaxPooling1D(pool_size=2),
             Dropout(0.2),
-            Conv1D(n_nodes_cnn, kernel_size=1, activation='relu', input_shape=(n_steps_in, n_features,)),
-            MaxPooling1D(pool_size=1),
+            Conv1D(n_nodes_cnn, kernel_size=2, activation='relu', input_shape=(n_steps_in, n_features,)),
+            MaxPooling1D(pool_size=2),
             Dropout(0.2),
             Flatten(),
             Dense(n_steps_out, activation='relu')
