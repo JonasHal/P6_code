@@ -6,11 +6,12 @@ from P6_code.FinishedCode.dataTransformation import createTransformation
 from P6_code.FinishedCode.functions import split_sequences
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, GRU, RepeatVector, TimeDistributed
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
 
 import warnings
+
 warnings.filterwarnings("ignore")
 
 
@@ -20,6 +21,7 @@ class mtotalModel:
     createTransformation(*params).getTotalData()
     @return: The model object, call createModel() to fit it.
     """
+
     def __init__(self, data, n_steps_in, n_nodes):
         # Variables to create the model
         self.totalData = data
@@ -44,17 +46,17 @@ class mtotalModel:
 
         @return: The model object, with a fitted model, which can be used for prediction.
         """
-        #print("Making Model")
+        # print("Making Model")
         # Create Input and Target Features
         X, Y = self.totalData.copy(), self.totalData.copy()
 
-        #Scale the data
+        # Scale the data
         self.scaler = self.scaler.fit(X)
         X_trans = self.scaler.transform(X)
         Y_trans = self.scaler.transform(Y)
 
         # Info about the input features
-        #print("The input features are: " + str(X.columns))
+        # print("The input features are: " + str(X.columns))
         self.n_features = len(X.columns)
 
         # Split the data into training and validation data
@@ -88,20 +90,22 @@ class mtotalModel:
         self.model.add(TimeDistributed(Dense(self.n_features)))
 
         # Printing the Structure of the model and compile it
-        #print(self.model.summary())
+        # print(self.model.summary())
         self.model.compile(optimizer='adam', loss='mse', metrics=["mean_absolute_error"])
 
         # Fit the data and trains the model
         self.history = self.model.fit(x=X_train, y=Y_train, batch_size=self.batch_size, epochs=self.epochs, verbose=0,
-                               validation_data=(X_val, Y_val))
+                                      validation_data=(X_val, Y_val))
 
         # Make and Invert predictions
-        train_predict = self.scaler.inverse_transform(self.model.predict(X_train)[:,-1,:].reshape(-1, self.n_features))
-        val_predict = self.scaler.inverse_transform(self.model.predict(X_val)[:,-1,:].reshape(-1, self.n_features))
+        train_predict = self.scaler.inverse_transform(
+            self.model.predict(X_train)[:, -1, :].reshape(-1, self.n_features))
+        val_predict = self.scaler.inverse_transform(self.model.predict(X_val)[:, -1, :].reshape(-1, self.n_features))
 
         # calculate root mean squared error
         self.trainScore = math.sqrt(mean_squared_error(Y_train[:, -1, :].reshape(-1, self.n_features), train_predict))
-        self.valScore = math.sqrt(mean_squared_error(Y_val[:, -1, :].reshape(-1, self.n_features), val_predict))
+        self.val_RMSE = math.sqrt(mean_squared_error(Y_val[:, -1, :].reshape(-1, self.n_features), val_predict))
+        self.val_MAE = mean_absolute_error(Y_val[:, -1, :].reshape(-1, self.n_features), val_predict)
 
         # Return the model and the scalers
         return self
@@ -187,7 +191,7 @@ if __name__ == "__main__":
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=False)
     Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
 
-    grid_df = pd.DataFrame(columns=['model type', 'n_steps_in', 'n_nodes', 'train', 'val'])
+    grid_df = pd.DataFrame(columns=['model type', 'n_steps_in', 'n_nodes', 'train', 'val_RMSE', 'val_MAE'])
 
     for model_type in ["LSTM", "GRU"]:
         for n_steps_in in [3, 15, 50]:
@@ -195,12 +199,13 @@ if __name__ == "__main__":
                 model = mtotalModel(Total_df, n_steps_in, n_nodes).createModel(type=model_type)
 
                 grid_df = grid_df.append({'model type': model_type, 'n_steps_in': n_steps_in, 'n_nodes': n_nodes,
-                                          'train': model.trainScore, 'val': model.valScore
+                                          'train': model.trainScore, 'val_RMSE': model.val_RMSE,
+                                          'val_MAE': model.val_MAE
                                           }, ignore_index=True)
                 model.PlotLoss()
                 print({'model type': model_type, 'n_steps_in': n_steps_in, 'n_nodes': n_nodes,
-                                          'train': model.trainScore, 'val': model.valScore
-                                          })
+                       'train': model.trainScore, 'val_RMSE': model.val_RMSE, 'val_MAE': model.val_MAE
+                       })
 
     print(grid_df.to_string())
     grid_df.to_csv('grid_df.csv')
