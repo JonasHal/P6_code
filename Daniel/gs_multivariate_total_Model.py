@@ -178,8 +178,7 @@ class mtotalModel:
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.legend()
-        plt.savefig('mvtm_2/' + self.title + '_n_steps_in' + str(self.n_steps_in) + '_n_nodes' + str(self.n_nodes))
-        #plt.show()
+        plt.savefig('mvtm/' + self.title + '_n_steps_in' + str(self.n_steps_in) + '_n_nodes' + str(self.n_nodes))
 
 
 if __name__ == "__main__":
