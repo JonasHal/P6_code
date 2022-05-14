@@ -207,7 +207,7 @@ if __name__ == "__main__":
 
     grid_df = pd.DataFrame(columns=['model type', "target_feature", 'n_steps_in', 'n_nodes', "n_nodes_cnn", "layers", 'val_RMSE', 'val_MAE'])
 
-    for model_type in ["CNN", "LSTM-CNN"]:
+    for model_type in ["LSTM", "GRU"]:
         for feature_name in ["total_kWhDelivered", "carsCharging", "carsIdle"]:
             for n_steps_in in [4, 15, 50]:
                 for n_nodes in [5, 50, 100]:
@@ -260,4 +260,4 @@ if __name__ == "__main__":
                                            })
 
     print(grid_df.to_string())
-    grid_df.to_csv('gsTotal_df.csv')
+    grid_df.to_csv('gsTotal_LSTM_GRU.csv')
