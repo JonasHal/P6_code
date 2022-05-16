@@ -1,5 +1,6 @@
 import math
 import pandas as pd
+import numpy as np
 
 from P6_code.FinishedCode.importData import ImportEV
 from P6_code.FinishedCode.dataTransformation import createTransformation
@@ -9,7 +10,10 @@ from keras.layers import Dense, LSTM, GRU, RepeatVector, TimeDistributed
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
+np.random.seed(2022)
+tf.random.set_seed(2022)
 
 class mtotalModel:
     """A Model class used to predict multivariate data from the total dataframe.
@@ -27,12 +31,12 @@ class mtotalModel:
 
         # Model Hyperparameters (configs)
         self.model = Sequential()
-        self.n_steps_in = 10
+        self.n_steps_in = 50
         self.n_steps_out = 5
-        self.n_nodes = 50
+        self.n_nodes = 5
 
-        self.batch_size = 50
-        self.epochs = 250
+        self.batch_size = 25
+        self.epochs = 200
 
     def createModel(self, type="LSTM"):
         """Creates the model with the given type and fits the data.
@@ -178,12 +182,12 @@ class mtotalModel:
 
 if __name__ == "__main__":
     # The model will always be first input
-    start, end = "2018-05-01", "2018-11-01"
+    start, end = "2018-03-01", "2020-01-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=False)
     Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
 
     model = mtotalModel(Total_df).createModel(type="GRU")
-    model = model.PredictTestSample("Caltech", "2018-11-01", "2018-12-01")
+    model = model.PredictTestSample("Caltech", "2020-01-01", "2020-03-01")
     print(model.trainScore)
     print(model.valScore)
     print(model.testScore)
