@@ -6,6 +6,10 @@ from P6_code.FinishedCode.dataTransformation import createTransformation
 from P6_code.FinishedCode.functions import split_sequences, getModelStructure
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.preprocessing import MinMaxScaler
+from numpy.random import seed
+seed(1)
+import tensorflow
+tensorflow.random.set_seed(2)
 
 class userModel:
     """A Model class used to predict one given feature from the total dataframe.
@@ -13,6 +17,7 @@ class userModel:
     createTransformation(*params).getUserData()
     @return: The model object, call createModel() to fit it.
     """
+
     def __init__(self, data):
         # Variables and defining loss evaluation to create the model
         self.userData = data
@@ -96,12 +101,12 @@ class userModel:
         """
         loss = self.history.history["loss"]
         val_loss = self.history.history["val_loss"]
-
-        plt.plot(loss, label="train_loss")
-        plt.plot(val_loss, label="val_loss")
-        plt.title(self.title)
-        plt.xlabel('Epochs')
-        plt.ylabel(self.lossType + ' Loss')
+        plt.figure(figsize=(5, 4))
+        plt.plot(loss, label="train_loss", linewidth=2.5)
+        plt.plot(val_loss, label="val_loss", linewidth=2.5)
+        #plt.title(self.title, fontsize=20)
+        plt.xlabel('Epochs', fontsize=10)
+        plt.ylabel('Loss', fontsize=10)
         plt.legend()
         plt.show()
     
@@ -122,7 +127,7 @@ class userModel:
         valPredictPlot[len(self.trainPredict) + (self.n_steps_in + self.n_steps_out) : len(self.y_trans) + 1] = self.valPredict[:, 0].reshape(-1, 1)
 
         # plot baseline and predictions
-        plt.title(self.title)
+        plt.title(self.title, fontsize=14)
         plt.plot(self.mmy.inverse_transform(self.y_trans))
         plt.plot(trainPredictPlot)
         plt.plot(valPredictPlot)
@@ -130,7 +135,7 @@ class userModel:
 
 
 if __name__ == "__main__":
-    start, end = "2018-09-01", "2018-11-01"
+    start, end = "2018-08-01", "2018-11-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=True, userSampleLimit=25)
     Users = createTransformation(df, start, end)
     User_61 = Users.getUserData(user="000000061")
@@ -140,3 +145,4 @@ if __name__ == "__main__":
     LSTM_CNN.PlotLoss()
 
     LSTM_CNN.PlotTrainVal()
+    print('doneeeeeeeeee')

@@ -7,6 +7,10 @@ from P6_code.FinishedCode.functions import split_sequences, getModelStructure
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
+from numpy.random import seed
+seed(1)
+import tensorflow
+tensorflow.random.set_seed(2)
 
 class usersModel:
 	"""A Model class used to predict one given feature from the total dataframe.
@@ -14,7 +18,7 @@ class usersModel:
     createTransformation(*params)
 	@return: The model object, call createModel() to fit it.
 	"""
-	def __init__(self, data, n_steps_in, n_nodes):
+	def __init__(self, data):
 		# Variables and defining loss evaluation to create the model
 		self.usersData = data
 		self.val_split = 0.2
@@ -28,10 +32,10 @@ class usersModel:
 		self.mmy = MinMaxScaler(feature_range=(0, 1))
 
 		#Model Hyperparameters (configs)
-		self.n_steps_in = n_steps_in
+		self.n_steps_in = 5
 		self.n_steps_out = 2
-		self.n_nodes = n_nodes
-		self.n_nodes_cnn = n_nodes
+		self.n_nodes = 30
+		self.n_nodes_cnn = 50
 
 		self.batch_size = 25
 		self.epochs = 200
@@ -92,7 +96,7 @@ class usersModel:
 
 		# Create the model
 		print(self.n_features)
-		self.title = '{type} layer:{layers}, n_nodes:{nodes} n_steps{steps_in}'.format(type=type, layers=layers, nodes=n_nodes, steps_in=n_steps_in)
+		self.title = type, layers
 		self.model = getModelStructure(type, layers, self.n_steps_in, self.n_steps_out, self.n_features, self.n_nodes, self.n_nodes_cnn)
 
 		# Printing the Structure of the model and compile it
@@ -196,10 +200,12 @@ class usersModel:
 		plt.title(self.title)
 		plt.plot(self.users_test_Y[user][:, 0])
 		plt.plot(self.test_predict[user][:, 0])
+		plt.legend(fontsize=14)
 		plt.show()
 
 	def PlotLoss(self):
-		"""Note: Should be run after creating the model
+		"""
+		Note: Should be run after creating the model
         Makes a graph with the loss from each epoch when fitting the model.
         """
 		loss = [x.history["loss"] for x in self.history]
@@ -207,12 +213,12 @@ class usersModel:
 
 		loss = [sum(x) / len(x) for x in zip(*loss)]
 		val_loss = [sum(x) / len(x) for x in zip(*val_loss)]
-
-		plt.plot(loss, label="train_loss")
-		plt.plot(val_loss, label="val_loss")
-		plt.title(self.title)
-		plt.xlabel('Epochs')
-		plt.ylabel('Loss')
+		plt.figure(figsize=(5, 4))
+		plt.plot(loss, label="train_loss", linewidth=2.5)
+		plt.plot(val_loss, label="val_loss", linewidth=2.5)
+		#plt.title(self.title)
+		plt.xlabel('Epochs', fontsize=10)
+		plt.ylabel('Loss', fontsize=10)
 		plt.legend()
 		plt.show()
 
@@ -222,8 +228,16 @@ if __name__ == "__main__":
 	df = ImportEV().getBoth(start_date=start, end_date=end, removeUsers=True, userSampleLimit=30)
 	Users = createTransformation(df, start, end)
 
+	model = usersModel(Users).createModel(type="LSTM", layers=2)
+	model = model.PredictTestSample("Both", "2018-12-01", "2019-01-01", 15)
 
+	model.PlotLoss()
+
+
+"""
 	grid_df = pd.DataFrame(columns=['model type', 'n_steps_in', 'n_nodes', 'train', 'val'])
+
+	
 
 	for model_type in ["LSTM", "GRU", 'CNN']:
 		for n_steps_in in [3, 15, 50]:
@@ -236,3 +250,4 @@ if __name__ == "__main__":
 
 	print(grid_df.to_string())
 	grid_df.to_csv('grid_df.csv')
+"""
