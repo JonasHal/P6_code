@@ -23,7 +23,7 @@ class mtotalModel:
     """
     def __init__(self, data):
         # Variables to create the model
-        self.totalData = data
+        self.totalData = data[["carsCharging", "carsIdle", "total_kWhDelivered"]]
         self.val_split = 0.2
 
         # Scaler
@@ -98,11 +98,14 @@ class mtotalModel:
 
         # Make and Invert predictions
         train_predict = self.scaler.inverse_transform(self.model.predict(X_train)[:,-1,:].reshape(-1, self.n_features))
+        train_Y = self.scaler.inverse_transform(Y_train[:, -1, :].reshape(-1, self.n_features))
         val_predict = self.scaler.inverse_transform(self.model.predict(X_val)[:,-1,:].reshape(-1, self.n_features))
+        val_Y = self.scaler.inverse_transform(Y_val[:, -1, :].reshape(-1, self.n_features))
+
 
         # calculate root mean squared error
-        self.trainScore = math.sqrt(mean_squared_error(Y_train[:, -1, :].reshape(-1, self.n_features), train_predict))
-        self.valScore = math.sqrt(mean_squared_error(Y_val[:, -1, :].reshape(-1, self.n_features), val_predict))
+        self.trainScore = math.sqrt(mean_squared_error(train_Y, train_predict))
+        self.valScore = math.sqrt(mean_squared_error(val_Y, val_predict))
 
         # Return the model and the scalers
         return self
@@ -182,7 +185,7 @@ class mtotalModel:
 
 if __name__ == "__main__":
     # The model will always be first input
-    start, end = "2018-03-01", "2020-01-01"
+    start, end = "2018-08-01", "2018-11-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=False)
     Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
 
