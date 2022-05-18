@@ -9,7 +9,10 @@ from keras.models import Sequential
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.preprocessing import MinMaxScaler
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
+np.random.seed(2021)
+tf.random.set_seed(2021)
 
 class totalModel:
     """A Model class used to predict one given feature from the total dataframe.
@@ -30,15 +33,15 @@ class totalModel:
 
         # Model Hyperparameters (configs)
         self.model = Sequential()
-        self.n_steps_in = 20
+        self.n_steps_in = 15
         self.n_steps_out = 5
         self.n_nodes = 50
         self.n_nodes_cnn = 64
 
-        self.batch_size = 50
-        self.epochs = 250
+        self.batch_size = 25
+        self.epochs = 200
 
-    def createModel(self, type="LSTM", layers):
+    def createModel(self, type="LSTM", layers=1):
         """Creates the model with the given type and fits the data.
         @param type: The type of model that should be created. Can be the following:
         LSTM, GRU, CNN or LSTM-CNN
@@ -194,18 +197,18 @@ class totalModel:
 
 if __name__ == "__main__":
     # The model will always be first input
-    start, end = "2018-10-01", "2018-11-01"
+    start, end = "2018-01-01", "2020-01-01"
     df = ImportEV().getCaltech(start_date=start, end_date=end, removeUsers=False)
     Total_df = createTransformation(df, start, end).remove_outliers().getTotalData()
 
-    model = totalModel(Total_df, feature_name="carsIdle").createModel(type="LSTM", layers=2)
-    #model = model.PredictTestSample("Caltech", "2019-01-01", "2019-01-15")
+    model = totalModel(Total_df, feature_name="carsCharging").createModel(type="CNN", layers=2)
+    model = model.PredictTestSample("Caltech", "2020-01-01", "2020-01-15")
     print(model.trainRMSE_Score)
     print(model.valRMSE_Score)
-    #print(model.testRMSE_Score)
+    print(model.testRMSE_Score)
 
     model.PlotLoss()
 
-    #model.PlotTestSample()
+    model.PlotTestSample()
 
-    model.PlotTrainVal()
+    #model.PlotTrainVal()

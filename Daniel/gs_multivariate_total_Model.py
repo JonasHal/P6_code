@@ -24,7 +24,7 @@ class mtotalModel:
 
     def __init__(self, data, n_steps_in, n_nodes):
         # Variables to create the model
-        self.totalData = data
+        self.totalData = data[["carsCharging", "carsIdle", "total_kWhDelivered"]]
         self.val_split = 0.2
 
         # Scaler
@@ -98,14 +98,15 @@ class mtotalModel:
                                       validation_data=(X_val, Y_val))
 
         # Make and Invert predictions
-        train_predict = self.scaler.inverse_transform(
-            self.model.predict(X_train)[:, -1, :].reshape(-1, self.n_features))
+        train_predict = self.scaler.inverse_transform(self.model.predict(X_train)[:, -1, :].reshape(-1, self.n_features))
+        train_Y = self.scaler.inverse_transform(Y_train[:, -1, :].reshape(-1, self.n_features))
         val_predict = self.scaler.inverse_transform(self.model.predict(X_val)[:, -1, :].reshape(-1, self.n_features))
+        val_Y = self.scaler.inverse_transform(Y_val[:, -1, :].reshape(-1, self.n_features))
 
         # calculate root mean squared error
-        self.trainScore = math.sqrt(mean_squared_error(Y_train[:, -1, :].reshape(-1, self.n_features), train_predict))
-        self.val_RMSE = math.sqrt(mean_squared_error(Y_val[:, -1, :].reshape(-1, self.n_features), val_predict))
-        self.val_MAE = mean_absolute_error(Y_val[:, -1, :].reshape(-1, self.n_features), val_predict)
+        self.trainScore = math.sqrt(mean_squared_error(train_Y, train_predict))
+        self.val_RMSE = math.sqrt(mean_squared_error(val_Y, val_predict))
+        self.val_MAE = mean_absolute_error(val_Y, val_predict)
 
         # Return the model and the scalers
         return self
@@ -194,7 +195,7 @@ if __name__ == "__main__":
     grid_df = pd.DataFrame(columns=['model type', 'n_steps_in', 'n_nodes', 'train', 'val_RMSE', 'val_MAE'])
 
     for model_type in ["LSTM", "GRU"]:
-        for n_steps_in in [3, 15, 50]:
+        for n_steps_in in [4, 15, 50]:
             for n_nodes in [5, 50, 100]:
                 model = mtotalModel(Total_df, n_steps_in, n_nodes).createModel(type=model_type)
 
