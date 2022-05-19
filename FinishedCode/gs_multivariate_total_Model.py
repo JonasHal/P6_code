@@ -209,7 +209,7 @@ if __name__ == "__main__":
                        })
 
     print(grid_df.to_string())
-    grid_df.to_csv('grid_df.csv')
+    grid_df.to_csv('../Data/gsTotal_Multivariate.csv')
 
     # for i in range(model.n_features):
     #     model.PlotTestSample(column_to_predict=i)
