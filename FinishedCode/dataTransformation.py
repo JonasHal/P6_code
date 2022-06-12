@@ -3,7 +3,7 @@ from pandas.tseries.holiday import USFederalHolidayCalendar as calendar
 import numpy as np
 from P6_code.FinishedCode.importData import ImportEV
 
-#Data Transformation for each day
+# Data Transformation for each day
 pd.options.mode.chained_assignment = None
 # Preprocessing Functions
 class createTransformation:
@@ -108,11 +108,12 @@ class createTransformation:
 
         # Input Features on specific days
         data_hourly.loc[:, 'Holiday'] = data_hourly.index.isin(holidays)
-        data_hourly.loc[:, ("Weekday")] = data_hourly.index.day_of_week
+        data_hourly.loc[:, "Weekday"] = data_hourly.index.day_of_week
 
         #Remove eccess data
         data_hourly = data_hourly[(data_hourly.index >= real_start) & (data_hourly.index < self.end)]
         return data_hourly
+
 
 if __name__ == "__main__":
     start, end = "2018-05-01", "2018-11-01"

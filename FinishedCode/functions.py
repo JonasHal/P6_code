@@ -3,6 +3,7 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, GRU, Conv1D, MaxPooling1D, Dropout, Flatten
 
+
 def split_sequences(input_sequences, output_sequence, n_steps_in, n_steps_out):
     """ Creates the sequence with input and output sequence.
     @param input_sequences: The input dataframe
@@ -11,7 +12,7 @@ def split_sequences(input_sequences, output_sequence, n_steps_in, n_steps_out):
     @param n_steps_out: Number of steps for each output
     @return: Two nested arrays with the data transformed to LSTM sequences.
     """
-    X, y = list(), list() # instantiate X and y
+    X, y = list(), list()  # instantiate X and y
     for i in range(len(input_sequences)):
         # find the end of the input, output sequence
         end_ix = i + n_steps_in
@@ -23,6 +24,7 @@ def split_sequences(input_sequences, output_sequence, n_steps_in, n_steps_out):
         seq_x, seq_y = input_sequences[i:end_ix], output_sequence[end_ix:out_end_ix]
         X.append(seq_x), y.append(seq_y)
     return np.array(X), np.array(y)
+
 
 def getModelStructure(type, layers, n_steps_in, n_steps_out, n_features, n_nodes, n_nodes_cnn):
     """Creates the structure of a model with the given hyperparameters. Kept simple
@@ -49,11 +51,10 @@ def getModelStructure(type, layers, n_steps_in, n_steps_out, n_features, n_nodes
             Dense(n_steps_out, activation='relu'),
         ])
 
-
     elif type == "GRU" and layers == 1:
         model = Sequential([
-        GRU(n_nodes, activation='relu', input_shape=(n_steps_in, n_features)),
-        Dense(n_steps_out, activation='relu')
+            GRU(n_nodes, activation='relu', input_shape=(n_steps_in, n_features)),
+            Dense(n_steps_out, activation='relu')
         ])
 
     elif type == "GRU" and layers == 2:
@@ -96,5 +97,6 @@ def getModelStructure(type, layers, n_steps_in, n_steps_out, n_features, n_nodes
 
     return model
 
+
 if __name__ == "__main__":
-    print(split_sequences([1,2,3,4,5,6,7,8], [1,2,3,4,5,6,7,8], 3, 3))
+    print(split_sequences([1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4, 5, 6, 7, 8], 3, 3))
